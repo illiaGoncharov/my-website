@@ -4,7 +4,7 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { DOSSIER, items } from "./content.js?v=16";
 import { background, sample } from "./palette.js";
-import { setTabDot } from "./favicon.js";
+import "./favicon.js";
 import { playHover, unlockSound } from "./sound.js?v=32";
 
 const view = document.getElementById("view");
@@ -20,7 +20,6 @@ for (const dot of document.querySelectorAll("#hint i")) {
   const [r, g, b] = sample(dot.dataset.kind, 0.5);
   dot.style.background = `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
 }
-setTabDot();
 const renderer = new THREE.WebGLRenderer({ canvas: view, antialias: true, powerPreference: "high-performance" });
 renderer.setClearColor(background);
 const scene = new THREE.Scene();
@@ -486,14 +485,7 @@ function frame(now) {
     if (focus >= 0) {
       requestSpike(0.45);
       playHover(items[focus].kind, focus);
-      setTabDot(items[focus].kind, (t * 0.035 + focus * 0.07) % 1);
-    } else {
-      setTabDot();
     }
-  }
-  if (focus >= 0 && !calm) {
-    const phase = (t * 0.035 + focus * 0.07) % 1;
-    setTabDot(items[focus].kind, Math.floor(phase * 20) / 20);
   }
   if (focus >= 0) {
     const full = dossierLength(labelEls[focus].blocks);

@@ -1,12 +1,17 @@
 import { sample } from "./palette.js";
 
+const KINDS = ["dev", "pm", "study", "note", "link"];
+const CYCLE_SEC = 52;
 const SIZE = 64;
+const calm = matchMedia("(prefers-reduced-motion: reduce)");
+
 const canvas = document.createElement("canvas");
 canvas.width = SIZE;
 canvas.height = SIZE;
 const ctx = canvas.getContext("2d");
 let link;
-let last = "";
+let lastQ = -1;
+let t0 = performance.now();
 
 function ensureLink() {
   if (link?.isConnected) return link;
@@ -47,30 +52,45 @@ function roundBg() {
   ctx.fill();
 }
 
-function paint(kind, t) {
-  const step = Math.round(t * 24) / 24;
-  const key = `${kind}:${step}`;
-  if (key === last) return;
-  last = key;
-  const [r, g, b] = sample(kind, step);
+function blendKinds(p) {
+  const n = KINDS.length;
+  const x = (((p % 1) + 1) % 1) * n;
+  const i = Math.floor(x) % n;
+  const f = x - Math.floor(x);
+  const a = sample(KINDS[i], 0.45);
+  const b = sample(KINDS[(i + 1) % n], 0.45);
+  return [
+    a[0] + (b[0] - a[0]) * f,
+    a[1] + (b[1] - a[1]) * f,
+    a[2] + (b[2] - a[2]) * f,
+  ];
+}
+
+function draw(rgb) {
   ctx.clearRect(0, 0, SIZE, SIZE);
   roundBg();
   const cx = SIZE / 2;
   const radius = SIZE * 0.36;
   ctx.beginPath();
   ctx.arc(cx, cx, radius, 0, Math.PI * 2);
-  ctx.fillStyle = `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
+  ctx.fillStyle = `rgb(${Math.round(rgb[0] * 255)}, ${Math.round(rgb[1] * 255)}, ${Math.round(rgb[2] * 255)})`;
   ctx.fill();
   pushIcon();
 }
 
-/** Круг во вкладке: цвет вида куба; без kind — нейтральная «заметка» */
-export function setTabDot(kind, t = 0.5) {
-  if (!kind) {
-    paint("note", 0.18);
-    return;
-  }
-  paint(kind, ((t % 1) + 1) % 1);
+function phase(now) {
+  if (calm.matches) return 0.18;
+  return ((now - t0) * 0.001) / CYCLE_SEC % 1;
 }
 
-setTabDot();
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (document.visibilityState === "hidden") return;
+  const p = phase(now);
+  const q = calm.matches ? 0 : Math.floor(p * 96);
+  if (q === lastQ) return;
+  lastQ = q;
+  draw(blendKinds(p));
+}
+
+requestAnimationFrame(frame);
