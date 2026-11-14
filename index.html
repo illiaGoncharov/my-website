@@ -49,6 +49,16 @@
       vertical-align: text-bottom;
     }
     .caret[hidden] { display: none; }
+    #name {
+      position: fixed;
+      top: 16px;
+      left: 18px;
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.55;
+      color: rgba(243, 236, 223, 0.5);
+      pointer-events: none;
+    }
     #hint {
       position: fixed;
       left: 18px;
@@ -114,6 +124,7 @@
   </style>
 </head>
 <body>
+  <p id="name">elia goncharov</p>
   <canvas id="view"></canvas>
   <div id="labels"></div>
   <aside id="hint">
