@@ -62,7 +62,7 @@
     #hint p { margin: 0; }
     #sound {
       pointer-events: auto;
-      cursor: pointer;
+      cursor: none;
       display: block;
       margin: 0 0 4px;
       padding: 0;
@@ -93,7 +93,7 @@
     }
     #rhythm p { margin: 0 0 3px; }
     #rhythm button {
-      cursor: pointer;
+      cursor: none;
       margin-left: 10px;
       padding: 0;
       border: 0;
@@ -117,13 +117,14 @@
     <p class="key"><i data-kind="dev"></i>разработка, <i data-kind="pm"></i>продукт, <i data-kind="study"></i>учёба, <i data-kind="note"></i>заметки, <i data-kind="link"></i>ссылки</p>
   </aside>
   <aside id="rhythm">
-    <p>ритм</p>
+    <p>ритм поверх фона</p>
     <div>
-      <button type="button" data-rhythm="none" aria-pressed="true">фон</button>
-      <button type="button" data-rhythm="pulse">пульс</button>
-      <button type="button" data-rhythm="steps">шаги</button>
-      <button type="button" data-rhythm="drops">капли</button>
+      <button type="button" data-rhythm="none" aria-pressed="true">гул</button>
+      <button type="button" data-rhythm="pulse">удар</button>
+      <button type="button" data-rhythm="steps">щелчки</button>
+      <button type="button" data-rhythm="drops">ноты</button>
     </div>
+    <p id="rhythm-now">только гул, без ритма</p>
   </aside>
   <script type="importmap">
   {
@@ -133,6 +134,6 @@
     }
   }
   </script>
-  <script type="module" src="./js/main.js?v=21"></script>
+  <script type="module" src="./js/main.js?v=22"></script>
 </body>
 </html>

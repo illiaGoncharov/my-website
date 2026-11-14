@@ -74,17 +74,25 @@ const BAR = BEAT * 4;
 const RHYTHMS = {
   none: [],
   pulse: [
-    { at: 0, hit: "thud", gain: 0.07 },
-    { at: 2, hit: "thud", gain: 0.035 },
+    { at: 0, hit: "thud", gain: 0.55 },
+    { at: 2, hit: "thud", gain: 0.28 },
   ],
   steps: [
-    { at: 0, hit: "step", gain: 0.09 },
-    { at: 1.7, hit: "step", gain: 0.055 },
+    { at: 0, hit: "step", gain: 0.42 },
+    { at: 0.7, hit: "step", gain: 0.3 },
+    { at: 1.55, hit: "step", gain: 0.22 },
   ],
   drops: [
-    { at: 0.5, hit: "drop", gain: 0.045, freq: 880 },
-    { at: 3, hit: "drop", gain: 0.03, freq: 1174.66 },
+    { at: 0, hit: "drop", gain: 0.2, freq: 880 },
+    { at: 1.5, hit: "drop", gain: 0.14, freq: 1174.66 },
+    { at: 3, hit: "drop", gain: 0.16, freq: 1046.5 },
   ],
+};
+const RHYTHM_CAPTION = {
+  none: "только гул, без ритма",
+  pulse: "редкий низкий удар",
+  steps: "три сухих щелчка",
+  drops: "высокие ноты поверх",
 };
 
 try {
@@ -286,10 +294,25 @@ export function playHover(kind, index) {
   }
 }
 
+function thud(time, gain) {
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(96, time);
+  osc.frequency.exponentialRampToValueAtTime(36, time + 0.16);
+  g.gain.setValueAtTime(gain, time);
+  g.gain.exponentialRampToValueAtTime(0.0001, time + 0.32);
+  osc.connect(g);
+  g.connect(dry);
+  osc.start(time);
+  osc.stop(time + 0.36);
+  burst(time, 0.05, gain * 0.45, 140, "lowpass");
+}
+
 function playHit(time, ev) {
-  if (ev.hit === "thud") note(time, 73.42, 0.6, ev.gain, dry);
-  else if (ev.hit === "step") burst(time, 0.018, ev.gain, 1600, "highpass");
-  else if (ev.hit === "drop") note(time, ev.freq, 1.6, ev.gain, room);
+  if (ev.hit === "thud") thud(time, ev.gain);
+  else if (ev.hit === "step") burst(time, 0.012, ev.gain, 3200, "highpass");
+  else if (ev.hit === "drop") note(time, ev.freq, 1.1, ev.gain, dry);
 }
 
 function clock() {
@@ -310,6 +333,8 @@ function paintRhythm() {
   for (const el of rhythmButtons) {
     el.setAttribute("aria-pressed", String(el.dataset.rhythm === rhythm));
   }
+  const caption = document.getElementById("rhythm-now");
+  if (caption) caption.textContent = RHYTHM_CAPTION[rhythm] || "";
 }
 
 function remember(on) {
@@ -345,5 +370,7 @@ for (const el of rhythmButtons) {
       paintButton();
     }
     await unlockSound();
+    const first = (RHYTHMS[rhythm] || [])[0];
+    if (first && ctx) playHit(ctx.currentTime + 0.06, first);
   });
 }
