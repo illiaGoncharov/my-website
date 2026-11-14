@@ -74,8 +74,6 @@
     #sound {
       pointer-events: auto;
       cursor: none;
-      display: block;
-      width: 100%;
       margin: 0;
       padding: 0;
       border: 0;
@@ -83,7 +81,6 @@
       font: inherit;
       font-size: 11px;
       line-height: 1.55;
-      text-align: right;
       color: rgba(243, 236, 223, 0.82);
     }
     #sound[aria-pressed="false"] { color: rgba(243, 236, 223, 0.28); }
@@ -100,13 +97,17 @@
       position: fixed;
       right: 18px;
       bottom: 16px;
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 10px;
       font-size: 11px;
       line-height: 1.55;
       color: rgba(243, 236, 223, 0.5);
       text-align: right;
     }
     #rhythm p { margin: 0; }
-    #rhythm div { margin-top: 3px; }
+    #rhythm div { margin: 0; }
     #rhythm div button + button { margin-left: 10px; }
     #rhythm button {
       cursor: none;
@@ -177,6 +178,6 @@
     }
   }
   </script>
-  <script type="module" src="./js/main.js?v=35"></script>
+  <script type="module" src="./js/main.js?v=36"></script>
 </body>
 </html>
