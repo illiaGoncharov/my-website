@@ -41,6 +41,7 @@ export const items = [
   {
     kind: "dev",
     title: "sfumato",
+    pet: true,
     role: "инженер + продуктовая идея · свой эксперимент",
     url: "https://illiaGoncharov.github.io/sfumato/",
     curious: "Рука в кадре собирает слова. Камера никуда не уходит: всё считается на твоём компьютере.",

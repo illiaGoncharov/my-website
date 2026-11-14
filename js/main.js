@@ -67,23 +67,42 @@ composer.addPass(new ShaderPass(glitch));
 const color = new THREE.Color();
 const dummy = new THREE.Object3D();
 
-function scatterHomes(count) {
-  const homes = [];
+// Боевые (клиенты, работа, PM-кейсы) слева, пет (свои эксперименты и учёба) справа,
+// заметки и ссылки живут по краям между ними.
+const groupOf = (item) => {
+  if (item.kind === "study" || item.pet) return "pet";
+  if (item.kind === "note" || item.kind === "link") return "misc";
+  return "live";
+};
+
+const CLOUDS = {
+  live: { c: [-3.2, 0, -2], r: [3.9, 3.0, 5.0] },
+  pet: { c: [5.2, -0.4, -1], r: [2.2, 2.0, 3.0] },
+  misc: { c: [0.9, 0, 1.6], r: [1.6, 3.8, 1.4] },
+};
+
+function scatterHomes(list) {
   const golden = Math.PI * (3 - Math.sqrt(5));
-  for (let i = 0; i < count; i++) {
-    const y = 1 - ((i + 0.5) / count) * 2;
-    const ring = Math.sqrt(Math.max(0, 1 - y * y));
-    const theta = golden * i;
-    homes.push(new THREE.Vector3(
-      Math.cos(theta) * ring * 5.6,
-      y * 3.15,
-      Math.sin(theta) * ring * 6.6 - 2,
-    ));
+  const members = { live: [], pet: [], misc: [] };
+  list.forEach((item, index) => members[groupOf(item)].push(index));
+  const homes = new Array(list.length);
+  for (const [name, indexes] of Object.entries(members)) {
+    const { c, r } = CLOUDS[name];
+    indexes.forEach((index, n) => {
+      const y = 1 - ((n + 0.5) / indexes.length) * 2;
+      const ring = Math.sqrt(Math.max(0, 1 - y * y));
+      const theta = golden * n;
+      homes[index] = new THREE.Vector3(
+        c[0] + Math.cos(theta) * ring * r[0],
+        c[1] + y * r[1],
+        c[2] + Math.sin(theta) * ring * r[2],
+      );
+    });
   }
   return homes;
 }
 
-const homes = scatterHomes(items.length);
+const homes = scatterHomes(items);
 const pos = homes.map((h) => h.clone());
 const vel = homes.map(() => new THREE.Vector3());
 const phase = homes.map((_, i) => i * 0.7);
@@ -98,7 +117,7 @@ const containers = items.map(() => {
   const core = new THREE.Mesh(coreGeo, new THREE.MeshBasicMaterial());
   group.add(shell, core);
   scene.add(group);
-  return { group, shell, core };
+  return { group, shell, core, size: 1 };
 });
 
 const labelEls = items.map((item) => {
@@ -385,7 +404,10 @@ function frame(now) {
   for (let i = 0; i < items.length; i++) {
     const node = containers[i];
     const active = i === focus;
-    node.group.scale.setScalar(active ? 1.2 : 1);
+    // Размер плавно дышит у каждого куба в своём ритме, активный чуть крупнее.
+    const breath = calm ? 1 : 1 + Math.sin(t * (0.35 + (i % 5) * 0.06) + phase[i] * 2.1) * 0.32;
+    node.size += ((active ? 1.2 : 1) - node.size) * 0.12;
+    node.group.scale.setScalar(node.size * breath);
     const dim = focus >= 0 && !active ? 0.35 : 1;
     node.shell.material.transparent = true;
     node.core.material.transparent = true;
