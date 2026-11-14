@@ -17,9 +17,10 @@ document.body.style.background = background;
 const renderer = new THREE.WebGLRenderer({ canvas: view, antialias: true, powerPreference: "high-performance" });
 renderer.setClearColor(background);
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(background, 9, 28);
-const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 40);
-camera.position.set(0, 0, 12.4);
+const CAM_Z = 14.6;
+scene.fog = new THREE.Fog(background, 11, 36);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 48);
+camera.position.set(0, 0, CAM_Z);
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
@@ -74,9 +75,9 @@ function scatterHomes(count) {
     const ring = Math.sqrt(Math.max(0, 1 - y * y));
     const theta = golden * i;
     homes.push(new THREE.Vector3(
-      Math.cos(theta) * ring * 3.3,
-      y * 2.15,
-      Math.sin(theta) * ring * 4.2 - 1.2,
+      Math.cos(theta) * ring * 5.6,
+      y * 3.15,
+      Math.sin(theta) * ring * 6.6 - 2,
     ));
   }
   return homes;
@@ -260,7 +261,7 @@ function frame(now) {
   const drift = calm ? 0 : 1;
   camX += (Math.sin(t * 0.12) * 0.22 * drift + ndc.x * 0.28 - camX) * 0.05;
   camY += (Math.cos(t * 0.1) * 0.12 * drift + ndc.y * 0.16 - camY) * 0.05;
-  camera.position.set(camX, camY, 12.4);
+  camera.position.set(camX, camY, CAM_Z);
   camera.lookAt(0, 0, 0);
 
   raycaster.setFromCamera(ndc, camera);
@@ -290,9 +291,9 @@ function frame(now) {
   for (let i = 0; i < items.length; i++) {
     const home = homes[i];
     target.set(
-      home.x + Math.sin(t * 0.17 + phase[i]) * 0.95 * amp,
-      home.y + Math.cos(t * 0.13 + phase[i] * 1.3) * 0.72 * amp,
-      home.z + Math.sin(t * 0.11 + phase[i] * 0.7) * 1.1 * amp,
+      home.x + Math.sin(t * 0.11 + phase[i]) * 1.75 * amp,
+      home.y + Math.cos(t * 0.085 + phase[i] * 1.3) * 1.3 * amp,
+      home.z + Math.sin(t * 0.07 + phase[i] * 0.7) * 2.2 * amp,
     );
     vel[i].add(target.sub(pos[i]).multiplyScalar(0.018));
   }
