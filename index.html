@@ -43,27 +43,10 @@
       vertical-align: text-bottom;
     }
     .caret[hidden] { display: none; }
-    #frame {
-      position: fixed;
-      inset: 18px;
-      pointer-events: none;
-      z-index: 2;
-    }
-    #frame i {
-      position: absolute;
-      width: 54px;
-      height: 54px;
-      border: 2px solid oklch(0.78 0.07 248);
-    }
-    #frame .tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
-    #frame .tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
-    #frame .bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
-    #frame .br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
   </style>
 </head>
 <body>
   <canvas id="view"></canvas>
-  <div id="frame" aria-hidden="true"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
   <div id="labels"></div>
   <script type="importmap">
   {
