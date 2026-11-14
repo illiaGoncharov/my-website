@@ -99,8 +99,59 @@ function paintButton() {
   button.textContent = enabled ? "звук вкл" : "звук выкл";
 }
 
+const coarse = () =>
+  matchMedia("(pointer: coarse)").matches
+  || /iPhone|iPad|iPod/i.test(navigator.userAgent)
+  || (navigator.maxTouchPoints > 0 && matchMedia("(max-width: 900px)").matches);
+
+let bornInGesture = false;
+let wasLive = false;
+let iosUnlockEl;
+let poked = false;
+
+function playIosUnlock() {
+  try {
+    iosUnlockEl ??= new Audio(
+      "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==",
+    );
+    iosUnlockEl.setAttribute("playsinline", "true");
+    iosUnlockEl.volume = 0.2;
+    const pending = iosUnlockEl.play();
+    if (pending) pending.catch(() => {});
+  } catch {
+    // Старый WebView может не знать HTMLAudio. Ниже остаётся Web Audio.
+  }
+}
+
+function poke() {
+  if (!ctx || !dry || poked) return;
+  poked = true;
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.07, t + 0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+  osc.type = "sine";
+  osc.frequency.value = 146.83;
+  osc.connect(g);
+  g.connect(dry);
+  osc.start(t);
+  osc.stop(t + 0.5);
+}
+
+function dropGraph() {
+  try { void ctx?.close(); } catch { /* уже закрыт */ }
+  ctx = null;
+  bed = null;
+  dry = null;
+  bornInGesture = false;
+}
+
 function build() {
-  ctx = new AudioContext();
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  ctx = new AC();
   const comp = ctx.createDynamicsCompressor();
   comp.threshold.value = -16;
   comp.knee.value = 16;
@@ -201,20 +252,60 @@ function setBed(on) {
   bed.gain.setTargetAtTime(on ? 0.16 : 0, now, 1.1);
 }
 
+function running() {
+  return ctx?.state === "running";
+}
+
+// На iOS граф, собранный до жеста, молчит даже в состоянии running.
+// Собираем его синхронно в touchstart, как в sfumato, и только потом ждём resume.
+export function primeSound() {
+  if (!enabled) return false;
+  const fresh = coarse() && !bornInGesture;
+  if (fresh || ctx?.state === "closed") {
+    if (coarse()) playIosUnlock();
+    if (ctx) dropGraph();
+  }
+  if (!ctx) build();
+  if (!ctx) return false;
+  if (fresh) {
+    bornInGesture = true;
+    poke();
+  }
+  if (ctx.state === "suspended" || ctx.state === "interrupted") void ctx.resume();
+  if (!running()) return false;
+  armed = true;
+  setBed(true);
+  return true;
+}
+
 export function unlockSound() {
   if (!enabled) return Promise.resolve(false);
-  if (!ctx) build();
-  const pending = ctx.state === "suspended" ? ctx.resume() : Promise.resolve();
+  if (primeSound()) return Promise.resolve(true);
+  if (!ctx) return Promise.resolve(false);
+  const pending = ctx.state === "suspended" || ctx.state === "interrupted"
+    ? ctx.resume()
+    : Promise.resolve();
   return pending.then(() => {
-    if (ctx.state !== "running") return false;
+    if (!running()) return false;
     armed = true;
     setBed(true);
     return true;
   }).catch(() => false);
 }
 
-// Браузер часто разрешает звук сам, если сайт уже открывали. Иначе дождёмся жеста.
-if (enabled) unlockSound();
+// На компьютере браузер часто пускает звук сам. На телефоне ждём касание.
+if (enabled && !coarse()) unlockSound();
+
+function noteGesture() {
+  wasLive = Boolean(armed && running());
+  primeSound();
+}
+
+addEventListener("touchstart", noteGesture, { capture: true, passive: true });
+addEventListener("pointerdown", (e) => {
+  if (e.pointerType === "touch") return;
+  noteGesture();
+}, { capture: true });
 
 function burst(time, dur, gainVal, freq, type) {
   const src = ctx.createBufferSource();
@@ -346,12 +437,13 @@ function remember(on) {
 if (button) {
   paintButton();
   button.addEventListener("click", async () => {
-    if (armed && enabled) {
+    if (wasLive && enabled) {
       enabled = false;
       nextBar = 0;
       setBed(false);
     } else {
       enabled = true;
+      primeSound();
       await unlockSound();
     }
     remember(enabled);
