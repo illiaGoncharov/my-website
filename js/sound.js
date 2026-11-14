@@ -9,7 +9,7 @@ const VOICES = {
     mix: [0.55, 0.2, 0.1, 0.05, 0.03],
     decay: 2.2,
     level: 0.16,
-    click: 0.4,
+    click: 0.28,
     pip: true,
   },
   pm: {
@@ -18,7 +18,7 @@ const VOICES = {
     mix: [0.6, 0.26, 0.09, 0.04],
     decay: 3.4,
     level: 0.18,
-    click: 0.06,
+    click: 0,
     pip: 0,
   },
   study: {
@@ -46,7 +46,7 @@ const VOICES = {
     mix: [0.48, 0.18, 0.07, 0.03],
     decay: 3.3,
     level: 0.14,
-    click: 0.04,
+    click: 0,
     pip: 0,
     fifth: true,
   },
@@ -61,6 +61,7 @@ let bed;
 let enabled = true;
 let armed = false;
 let lastAt = 0;
+let lastClick = 0;
 let rhythm = "none";
 let nextBar = 0;
 const button = document.getElementById("sound");
@@ -275,9 +276,14 @@ export function playHover(kind, index) {
   lastAt = now;
   const freq = voice.notes[index % voice.notes.length];
   piano(now, freq, voice);
-  if (voice.click) burst(now, 0.025, voice.click, 2400, "highpass");
-  if (voice.grain) burst(now, 0.16, voice.grain, 900, "bandpass");
-  if (voice.pip) note(now, PIPS[index % PIPS.length], 0.09, 0.05, dry);
+  if (voice.pip) note(now + 0.07, PIPS[index % PIPS.length], 0.09, 0.05, dry);
+  if (voice.grain) burst(now + 0.11, 0.16, voice.grain, 700 + (index % 3) * 220, "bandpass");
+  // Щелчок позже ноты и не чаще, чем раз в треть секунды, иначе серия сливается в треск.
+  if (voice.click && now - lastClick > 0.34) {
+    lastClick = now;
+    const gap = 0.12 + (index % 4) * 0.04;
+    burst(now + gap, 0.016, voice.click, 1500 + (index % 5) * 520, "highpass");
+  }
 }
 
 function playHit(time, ev) {
