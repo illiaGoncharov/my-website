@@ -127,7 +127,11 @@ const labelEls = items.map((item) => {
   look.rel = "noopener";
   look.hidden = !item.url;
   if (item.url) look.href = item.url;
-  el.append(title, ...blocks.map((block) => block.section), look);
+  const role = document.createElement("em");
+  role.className = "role";
+  role.textContent = item.role || "";
+  role.hidden = !item.role;
+  el.append(title, role, ...blocks.map((block) => block.section), look);
   labelsRoot.append(el);
   return { el, blocks, caret };
 });
