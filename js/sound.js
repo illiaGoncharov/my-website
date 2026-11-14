@@ -61,14 +61,12 @@ let bed;
 let enabled = true;
 let armed = false;
 let lastAt = 0;
-let lastClick = 0;
 let rhythm = "none";
 let nextBar = 0;
 const button = document.getElementById("sound");
 const rhythmButtons = [...document.querySelectorAll("#rhythm button[data-rhythm]")];
 
 // Ре минор: и фон, и ноты кубов, и ритм сидят в одних ступенях.
-const PIPS = [1174.66, 1567.98, 1760];
 const BEAT = 60 / 44;
 const BAR = BEAT * 4;
 const RHYTHMS = {
@@ -284,16 +282,7 @@ export function playHover(kind, index) {
   const now = ctx.currentTime;
   if (now - lastAt < 0.14) return;
   lastAt = now;
-  const freq = voice.notes[index % voice.notes.length];
-  piano(now, freq, voice);
-  if (voice.pip) note(now + 0.07, PIPS[index % PIPS.length], 0.09, 0.05, dry);
-  if (voice.grain) burst(now + 0.11, 0.16, voice.grain, 700 + (index % 3) * 220, "bandpass");
-  // Щелчок позже ноты и не чаще, чем раз в треть секунды, иначе серия сливается в треск.
-  if (voice.click && now - lastClick > 0.34) {
-    lastClick = now;
-    const gap = 0.12 + (index % 4) * 0.04;
-    burst(now + gap, 0.016, voice.click, 1500 + (index % 5) * 520, "highpass");
-  }
+  piano(now, voice.notes[index % voice.notes.length], voice);
 }
 
 function thud(time, gain) {
