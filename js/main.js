@@ -4,6 +4,7 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { DOSSIER, items } from "./content.js?v=14";
 import { background, sample } from "./palette.js";
+import { playHover, unlockSound } from "./sound.js?v=15";
 
 const view = document.getElementById("view");
 const labelsRoot = document.getElementById("labels");
@@ -249,7 +250,11 @@ function onPointerMove(e) {
 }
 
 function onPointerDown(e) {
-  if (e.button !== 0 || e.target.closest("a")) return;
+  if (e.target.closest("#sound")) return;
+  unlockSound().then(() => {
+    if (focus >= 0) playHover(items[focus].kind, focus);
+  });
+  if (e.button !== 0 || e.target.closest("a, button")) return;
   pointerDown = true;
 }
 
@@ -397,7 +402,10 @@ function frame(now) {
   if (nearest !== focus) {
     focus = nearest;
     typedCount = 0;
-    if (focus >= 0) requestSpike(0.45);
+    if (focus >= 0) {
+      requestSpike(0.45);
+      playHover(items[focus].kind, focus);
+    }
   }
   if (focus >= 0) {
     const full = dossierLength(labelEls[focus].blocks);

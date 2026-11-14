@@ -60,6 +60,19 @@
       pointer-events: none;
     }
     #hint p { margin: 0; }
+    #sound {
+      pointer-events: auto;
+      cursor: pointer;
+      display: block;
+      margin: 0 0 4px;
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      font-size: 11px;
+      color: inherit;
+    }
+    #sound[aria-pressed="false"] { color: rgba(243, 236, 223, 0.28); }
     #hint .key { margin-top: 3px; }
     #hint i {
       display: inline-block;
@@ -75,6 +88,7 @@
   <canvas id="view"></canvas>
   <div id="labels"></div>
   <aside id="hint">
+    <button id="sound" type="button" aria-pressed="true">звук вкл</button>
     <p>подведи курсор к кубу, и он расскажет о себе :)</p>
     <p class="key"><i data-kind="dev"></i>разработка, <i data-kind="pm"></i>продукт, <i data-kind="study"></i>учёба, <i data-kind="note"></i>заметки, <i data-kind="link"></i>ссылки</p>
   </aside>
@@ -86,6 +100,6 @@
     }
   }
   </script>
-  <script type="module" src="./js/main.js?v=14"></script>
+  <script type="module" src="./js/main.js?v=15"></script>
 </body>
 </html>
