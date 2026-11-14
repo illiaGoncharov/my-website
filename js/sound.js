@@ -65,7 +65,7 @@ let lastClick = 0;
 let rhythm = "none";
 let nextBar = 0;
 const button = document.getElementById("sound");
-const rhythmButtons = [...document.querySelectorAll("#rhythm button")];
+const rhythmButtons = [...document.querySelectorAll("#rhythm button[data-rhythm]")];
 
 // Ре минор: и фон, и ноты кубов, и ритм сидят в одних ступенях.
 const PIPS = [1174.66, 1567.98, 1760];
@@ -77,10 +77,12 @@ const RHYTHMS = {
     { at: 0, hit: "thud", gain: 0.55 },
     { at: 2, hit: "thud", gain: 0.28 },
   ],
-  steps: [
-    { at: 0, hit: "step", gain: 0.42 },
-    { at: 0.7, hit: "step", gain: 0.3 },
-    { at: 1.55, hit: "step", gain: 0.22 },
+  torn: [
+    { at: 0, hit: "step", gain: 0.46 },
+    { at: 0.18, hit: "step", gain: 0.24 },
+    { at: 1.25, hit: "step", gain: 0.36 },
+    { at: 2.85, hit: "step", gain: 0.2 },
+    { at: 3.08, hit: "step", gain: 0.32 },
   ],
   drops: [
     { at: 0, hit: "drop", gain: 0.2, freq: 880 },
@@ -91,7 +93,7 @@ const RHYTHMS = {
 const RHYTHM_CAPTION = {
   none: "только гул, без ритма",
   pulse: "редкий низкий удар",
-  steps: "три сухих щелчка",
+  torn: "щелчки не в ровную долю",
   drops: "высокие ноты поверх",
 };
 
@@ -322,7 +324,10 @@ function clock() {
   if (!events.length) return;
   if (!nextBar) nextBar = now + 0.15;
   while (nextBar < now + 0.3) {
-    for (const ev of events) playHit(nextBar + ev.at * BEAT, ev);
+    for (const ev of events) {
+      const slip = rhythm === "torn" && ev.at > 0 ? (Math.random() - 0.5) * 0.22 : 0;
+      playHit(nextBar + Math.max(0, ev.at + slip) * BEAT, ev);
+    }
     nextBar += BAR;
   }
 }
