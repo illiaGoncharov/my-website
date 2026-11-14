@@ -1,168 +1,441 @@
-// Досье: role — роль одной строкой, curious для любопытных, hr для найма, tech для технарей.
-// hr строится как «задача → решение → результат». Пустое поле не показывается.
-// Без url нет кнопки «посмотреть».
+// Досье. Переводимые поля: { ru, en }. Пустая строка: слой не показывается.
+// curious: живой короткий рассказ о проекте, от первого лица, без отчётного тона.
+// hr: связный мини-кейс: задача, что сделано, итог. Без анкетных плашек.
+// tech: стек и зачем. Без url нет кнопки "посмотреть".
+
+export const UI = {
+  ru: {
+    title: "Илья Гончаров",
+    lead: "наведите курсор на куб, чтобы открыть карточку",
+    look: "посмотреть",
+    soundOn: "звук вкл",
+    soundOff: "звук выкл",
+    rhythms: { pulse: "удар", torn: "рваный", drops: "ноты" },
+    kinds: {
+      dev: "разработка",
+      art: "арт",
+      pm: "продукт",
+      study: "учёба",
+      note: "заметки",
+      link: "ссылки",
+    },
+  },
+  en: {
+    title: "Ilia Goncharov",
+    lead: "hover a cube to open its card",
+    look: "view",
+    soundOn: "sound on",
+    soundOff: "sound off",
+    rhythms: { pulse: "pulse", torn: "torn", drops: "notes" },
+    kinds: {
+      dev: "dev",
+      art: "art",
+      pm: "product",
+      study: "study",
+      note: "notes",
+      link: "links",
+    },
+  },
+};
+
 export const items = [
   {
     kind: "dev",
-    title: "Brownfox",
-    role: "продакт + инженер · платежи и чекаут",
-    url: "https://brownfox.vercel.app",
-    curious: "Шрифты продаются всему миру, но россиянам платёжка отвечала «нет». Теперь у магазина два кошелька, и каждый покупатель попадает в свой.",
-    hr: "Задача: из-за санкций международные провайдеры не принимали платежи из РФ. Решение: контур для двух рынков, провайдер выбирается по языку и региону; запуск вместе с владельцами: документы, тестовый чек-лист, оферта, возврат. Результат: закрыто 37 сбоев оплаты, ошибки видны в Sentry раньше, чем о них напишет покупатель.",
-    tech: "Четыре провайдера за одним интерфейсом: новый подключается без переписывания чекаута. Позиции во FastSpring не заводятся тысячами заранее, а создаются при первой покупке и кэшируются на 24 часа. Для РФ свой прокси, потому что Vercel открывался нестабильно, заодно вернул мониторинг, который молча не работал. Next.js, Sanity, Sentry.",
+    title: { ru: "Brownfox", en: "Brownfox" },
+    role: {
+      ru: "продакт + инженер · платежи и чекаут",
+      en: "product + engineer · payments and checkout",
+    },
+    url: "https://brownfox.org/",
+    curious: {
+      ru: "Магазин шрифтов продаёт по всему миру, а платёжка из России отвечала отказом. Я занимался тем, чтобы у каждого покупателя был свой путь к оплате: один для России, другой для остального мира. Лучший результат здесь тот, которого никто не замечает.",
+      en: "A type foundry sells worldwide, but payments from Russia kept failing. I worked on giving every buyer their own path to checkout: one for Russia, another for the rest of the world. The best outcome here is the one nobody notices.",
+    },
+    hr: {
+      ru: "После санкций международные платёжные провайдеры перестали принимать карты из России, а магазин шрифтов продаёт по всему миру. Я выстроил два независимых платёжных контура с автоматическим выбором по региону и языку и запустил их вместе с владельцами: оферта, возвраты, тестовый чек-лист. Закрыто 37 сбоев оплаты, а Sentry показывает ошибки чекаута раньше, чем о них сообщит покупатель.",
+      en: "After sanctions, international payment providers stopped accepting cards from Russia, while the shop sells fonts worldwide. I built two independent payment paths, chosen automatically by region and language, and launched them with the owners: offer, refunds, test checklist. 37 payment failures are closed, and Sentry shows checkout errors before a customer reports them.",
+    },
+    tech: {
+      ru: "Next.js 15, React 19, TypeScript. Sanity: владельцы правят тексты и цены сами. Zustand: корзина. Stripe, ЮKassa, FastSpring и Lemon Squeezy за одним интерфейсом. Товары во FastSpring создаются при первой покупке. Sentry: сбои видно сразу. Nginx-прокси с российским IP: Vercel открывался через раз.",
+      en: "Next.js 15, React 19, TypeScript. Sanity so owners edit copy and prices. Zustand for the cart. Stripe, YooKassa, FastSpring, and Lemon Squeezy behind one interface. FastSpring products are created on first purchase. Sentry for payment failures. Nginx proxy on a Russian IP: Vercel was flaky from there.",
+    },
   },
   {
     kind: "dev",
-    title: "Banena",
-    role: "разработка · клиентский сайт",
+    title: { ru: "Banena", en: "Banena" },
+    role: {
+      ru: "разработка · клиентский сайт",
+      en: "development · client site",
+    },
     url: "https://banena.ru/",
-    curious: "Портфолио фотографа, где работы листаешь, а не ищешь, куда нажать. Плёнка или сетка: как удобнее глазу.",
-    hr: "Задача: показать серию снимков целиком, а не россыпью карточек. Решение: два режима просмотра и собственный лайтбокс. Результат: сайт в рабочей эксплуатации у клиента.",
-    tech: "Next.js и Tailwind. Свой лайтбокс, режимы плёнки и сетки.",
+    curious: {
+      ru: "Фотографу было важно, чтобы снимки читались серией, а не набором картинок. Поэтому на сайте два режима, плёнка и сетка, а лайтбокс я написал сам, чтобы интерфейс не спорил с кадрами. Вёл проект от макета до публикации.",
+      en: "The photographer wanted frames to read as a series, not a pile of pictures. So the site has two modes, filmstrip and grid, and I wrote the lightbox myself so the interface never argues with the photos. I took it from layout to launch.",
+    },
+    hr: {
+      ru: "Серию снимков нужно было показать целиком, и сайт должен был одинаково открываться для посетителей, в том числе из России. Я сделал два режима просмотра, собственный просмотрщик со свайпами и подготовку изображений, затем довёл сайт до публикации. Он работает у клиента в эксплуатации.",
+      en: "A photo series had to be shown as a whole, and the site had to open reliably for visitors, including from Russia. I built two viewing modes, a custom viewer with swipe, and an image pipeline, then took the site to launch. It is live for the client.",
+    },
+    tech: {
+      ru: "Next.js 14, TypeScript, Tailwind. sharp режет фото до 1920 и в WebP. Свой лайтбокс и свайпы без тяжёлой библиотеки. Скрипты Cloudflare и деплоя: открывается из РФ и выкладывается одной командой.",
+      en: "Next.js 14, TypeScript, Tailwind. sharp resizes to 1920 and WebP. Custom lightbox and swipe without a heavy gallery library. Cloudflare and deploy scripts so it opens from Russia and ships with one command.",
+    },
   },
   {
     kind: "dev",
-    title: "Greenwich",
-    role: "продакт + разработка · галерея в Англии",
+    title: { ru: "Greenwich", en: "Greenwich" },
+    role: {
+      ru: "продакт + разработка · галерея в Англии",
+      en: "product + development · gallery in England",
+    },
     url: "https://illiagoncharov.github.io/greenwich/",
-    curious: "Английская галерея, английский клиент и защита макета на английском. Не локализованными остались только мои нервы.",
-    hr: "Задача: сайт галереи для заказчика из Великобритании. Решение: требования, макет в Figma, защита концепции на английском, координация разработки и SEO. Результат: проект проведён от запроса до запуска.",
-    tech: "Next.js и TypeScript. Анимации первого экрана на CSS, без лишних библиотек.",
+    curious: {
+      ru: "Галерея из Великобритании, и всё общение на английском: от требований до защиты макета. Мне было интересно вести проект на чужом языке и пройти путь от первого брифа до запуска.",
+      en: "A gallery from the UK, with everything in English, from requirements to the layout pitch. I enjoyed running a project in a second language and taking it from the first brief to launch.",
+    },
+    hr: {
+      ru: "Заказчик из Великобритании пришёл с расплывчатыми требованиями на английском. Я уточнил задачу, сделал макет в Figma, защитил концепцию на английском и организовал разработку и SEO. Проект дошёл до запуска.",
+      en: "A UK client came with vague requirements in English. I clarified the brief, designed the layout in Figma, pitched the concept in English, and coordinated the build and SEO. The project reached launch.",
+    },
+    tech: {
+      ru: "Next.js 16, React 19, TypeScript, Tailwind 4. Анимации на CSS: без библиотеки ради одного экрана. SVG: не мылится при масштабе.",
+      en: "Next.js 16, React 19, TypeScript, Tailwind 4. CSS animation so a one-screen motion needs no library. SVG so art stays sharp at any size.",
+    },
   },
   {
     kind: "dev",
-    title: "Appyland",
-    role: "разработка · командный промо-сайт",
+    title: { ru: "Appyland", en: "Appyland" },
+    role: {
+      ru: "разработка · командный промо-сайт",
+      en: "development · team promo site",
+    },
     url: "https://appyland.ru/",
-    curious: "Промо, где буквы разъезжаются по одной, а картинки худеют сами и ни о чём не просят.",
-    hr: "Задача: тяжёлый промо-сайт с анимациями, который делает команда. Решение: пайплайн картинок и текста, чтобы не собирать каждое состояние руками. Результат: меньше ручной рутины в общей работе.",
-    tech: "Vite. Конвертация в WebP и разбивка текста на буквы для анимаций.",
+    curious: {
+      ru: "Промо-сайт с анимацией, который собирает команда. Мой вклад в том, что тяжёлые картинки и сборка под разные площадки делаются скриптами, а не руками. Эту работу не видно на сайте, но команда её чувствует.",
+      en: "A promo site with animation, built by a team. My part is that heavy images and builds for different hosts are handled by scripts, not by hand. You will not see that work on the site, but the team feels it.",
+    },
+    hr: {
+      ru: "Команда делала тяжёлый промо-сайт с анимациями, и подготовка картинок занимала много ручной работы. Я автоматизировал оптимизацию изображений и сборку под разные площадки. Команда освободилась от рутины и занялась самим продуктом.",
+      en: "A team was building a heavy animated promo site, and image preparation took a lot of manual work. I automated image optimization and builds for different hosts. The team was freed from routine and could focus on the product itself.",
+    },
+    tech: {
+      ru: "Vite 7. sharp: скрипт переводит картинки из Lottie в WebP. Две сборки с разным базовым путём: GitHub Pages и хостинг.",
+      en: "Vite 7. sharp script turns Lottie images into WebP. Two builds with different base paths: GitHub Pages and hosting.",
+    },
   },
   {
     kind: "dev",
-    title: "sfumato",
+    title: { ru: "sfumato", en: "sfumato" },
     pet: true,
-    role: "инженер + продуктовая идея · свой эксперимент",
+    role: {
+      ru: "инженер + продуктовая идея · свой эксперимент",
+      en: "engineer + product idea · personal experiment",
+    },
     url: "https://illiaGoncharov.github.io/sfumato/",
-    curious: "Рука в кадре собирает слова. Камера смотрит только на тебя и только в твоём браузере: видео никуда не уходит.",
-    hr: "Личный эксперимент: идея, прототип и взаимодействие без готового ТЗ. Из него вырос этот сайт. Показывает, что умею придумать продукт, а не только собрать страницу.",
-    tech: "Canvas и MediaPipe Hands локально, через WebAssembly. Цвет в OKLCH.",
+    curious: {
+      ru: "Хотелось выяснить, можно ли собирать слова жестами руки прямо в браузере. Оказалось, можно: камера работает локально, видео никуда не отправляется. Это мой эксперимент от идеи до звука, и позже из него вырос этот сайт.",
+      en: "I wanted to find out whether you can gather words with hand gestures right in the browser. You can: the camera runs locally and video goes nowhere. It is my experiment from idea to sound, and this site grew out of it.",
+    },
+    hr: {
+      ru: "Хотел проверить гипотезу: можно ли управлять сайтом жестами без установки и без отправки видео. Спроектировал и собрал прототип с локальным распознаванием руки, звуком и собственной цветовой системой. Он работает в браузере, и из него вырос этот сайт.",
+      en: "I wanted to test a hypothesis: can a site be driven by gestures with no install and no video upload? I designed and built a prototype with on-device hand tracking, sound, and its own color system. It runs in the browser, and this site grew out of it.",
+    },
+    tech: {
+      ru: "Vanilla JS и Canvas 2D. MediaPipe Hands через WebAssembly, локально. Tone.js: звук. Цвет в OKLCH (culori). Supabase по желанию.",
+      en: "Vanilla JS and Canvas 2D. MediaPipe Hands via WebAssembly, on-device. Tone.js for sound. Color in OKLCH (culori). Supabase optional.",
+    },
+  },
+  {
+    kind: "art",
+    title: { ru: "NoHome", en: "NoHome" },
+    role: {
+      ru: "разработка · сайт-квест с художницей из Парижа",
+      en: "development · quest site with a Paris-based artist",
+    },
+    url: "https://nohome-next.vercel.app/",
+    curious: {
+      ru: "Сайт-квест про виртуальный дом: комнаты, рюкзак, телефон с экраном блокировки, дневник, плеер. Я работал рядом с художницей из Парижа. Она придумывала мир, а я искал способ, чтобы в браузере он вёл себя так, как задумано.",
+      en: "A quest site about a virtual house: rooms, a backpack, a phone with a lock screen, a diary, a player. I worked alongside an artist in Paris. She imagined the world, and I looked for a way to make it behave in the browser as intended.",
+    },
+    hr: {
+      ru: "Художественный проект требует иного подхода, чем визитка: каждая вещь часть замысла, а перевод и мобильные устройства не должны его ломать. Я реализовал замысел художницы: пять комнат с навигацией по карте, предметы-сценарии, режим x-ray и отдельную мобильную версию. Рабочая версия доступна онлайн.",
+      en: "An art project calls for a different approach than a brochure site: every object is part of the idea, and translation or phones must not break it. I built the artist's concept: five rooms with map navigation, object scenes, an x-ray mode, and a separate mobile version. A working version is online.",
+    },
+    tech: {
+      ru: "WordPress, своя тема. Vanilla JS-модули на событиях. Навигация по SVG-скелету дома. Google Translate: 50+ языков. Мобильная версия отдельно, прогнал в Playwright на iPhone SE и 13.",
+      en: "WordPress with a custom theme. Vanilla JS modules on events. Navigation over an SVG house skeleton. Google Translate for 50+ languages. Separate mobile build, checked in Playwright on iPhone SE and 13.",
+    },
+  },
+  {
+    kind: "art",
+    title: { ru: "Before Life | After Life", en: "Before Life | After Life" },
+    role: {
+      ru: "разработка · сайт к арт-проекту",
+      en: "development · site for an art project",
+    },
+    url: "https://illiagoncharov.github.io/before-life-after-life/",
+    curious: {
+      ru: "Арт-проект о личных архивах и искусственном интеллекте. Концепция принадлежит художнику Андрею Лопатину, сайт разработал я. Около шестидесяти человек из разных стран прислали свои архивы, и мне было важно, чтобы каждый мог найти себя на сайте.",
+      en: "An art project about personal archives and artificial intelligence. The concept belongs to the artist Andrei Lopatin; I built the site. About sixty people from different countries sent their archives, and it mattered to me that each of them could find themselves on the site.",
+    },
+    hr: {
+      ru: "Инсталляция существует только в зале, а архивы нужно было собрать у людей по всему миру и сохранить после выставки. Я сделал сайт-хаб: галерея, тексты, фильтры по запросам и авторам, форма отправки архива с отдельным согласием на публикацию. В проекте участвуют около шестидесяти человек, а сайт работает без собственного сервера.",
+      en: "The installation exists only in a room, while archives had to be gathered from people worldwide and kept after the show. I built a hub: gallery, texts, filters by prompt and contributor, and a submission form with a separate consent to publish. About sixty people took part, and the site runs without a custom server.",
+    },
+    tech: {
+      ru: "React 19, CSS Modules. Cloudinary: загрузка картинок из браузера. EmailJS: анкета на почту без бэкенда. Gallery, Text, By Prompt, By Contributor: фильтры одних данных. GitHub Pages через gh-pages.",
+      en: "React 19, CSS Modules. Cloudinary for in-browser image upload. EmailJS for the form with no backend. Gallery, Text, By Prompt, By Contributor as filters over the same data. GitHub Pages via gh-pages.",
+    },
   },
   {
     kind: "pm",
-    title: "Платформа искусства",
-    role: "продакт · discovery и учёт, читаю код",
+    title: {
+      ru: "Школа и галерея искусств",
+      en: "Art school and gallery",
+    },
+    role: {
+      ru: "продакт · учёт оплат и зарплат, читаю код",
+      en: "product · tuition and payroll tracking, I read the code",
+    },
     url: "",
-    curious: "«Нас не найти в поиске» звучит как заказ на сайт, а оказалось заказом на систему. Предложил три уровня, клиент выбрал средний, и работа выросла в четыре этапа.",
-    hr: "Задача: «нас не найти в поиске». Решение: аудит сайта, пять встреч, разбор четырёх таблиц с оплатами и зарплатами, журнал на 34 решения. Результат: за три недели единый учёт вместо разрозненных таблиц (записи, долги, рассрочки, доход) и договор на четыре этапа.",
-    tech: "Разобрал четыре таблицы и свёл их в один рабочий контур учёта. Журнал решений ведётся как ТЗ, стек читаю и ревьюю сам: Next.js, TypeScript, Node.js. Репозитория нет, кейс продуктовый.",
+    curious: {
+      ru: "Клиент пришёл с задачей про поиск и SEO, но за разговором стояла другая проблема: оплаты, рассрочки и зарплаты преподавателей жили в таблицах. Я предложил три варианта работы, клиент выбрал средний. Сейчас строим систему учёта, и демо уже приняли.",
+      en: "The client came with a search and SEO request, but behind the conversation was a different problem: payments, installments, and teacher payroll lived in spreadsheets. I offered three scopes and the client picked the middle one. We are building an accounting system now, and the demo has been accepted.",
+    },
+    hr: {
+      ru: "Учёт школы и галереи держался на четырёх таблицах: 35 листов заявок в четырёх форматах, 16 вариантов статуса, зарплаты на шести листах. Вместо готовой CRM я начал с аудита процесса: пять встреч, журнал из 34 решений, три варианта работы и договор на четыре этапа. Первый контур уже собран (записи, рассрочки, долги, расчёт зарплат), и клиент принял демо.",
+      en: "The school and gallery ran on four spreadsheets: 35 application sheets in four formats, 16 status spellings, and payroll across six sheets. Instead of an off-the-shelf CRM, I started with a process audit: five meetings, a log of 34 decisions, three scopes, and a four-stage contract. The first loop is built (enrollments, installments, debts, payroll) and the client accepted the demo.",
+    },
+    tech: {
+      ru: "Next.js 16, React 19, TypeScript, Tailwind, shadcn/ui. PostgreSQL и Prisma 7. Деньги в Decimal. Enrollment со статусом вместо отдельных таблиц. Долг считается, а не хранится. Расчёты в чистых функциях с тестами (vitest). NextAuth: ставки видит только owner. Docker, Caddy, автодеплой на VPS в РФ.",
+      en: "Next.js 16, React 19, TypeScript, Tailwind, shadcn/ui. PostgreSQL and Prisma 7. Money as Decimal. One Enrollment with status instead of split tables. Debt is computed, not stored. Pure calc functions with vitest. NextAuth: only owner sees rates. Docker, Caddy, auto-deploy to a VPS in Russia.",
+    },
   },
   {
     kind: "pm",
-    title: "Креативная неделя",
-    role: "руководитель проекта · студия Лебедева",
-    url: "https://www.artlebedev.ru",
-    curious: "Крупный фестиваль, заказчик через студию и несколько человек, за которыми последнее слово. Проект приняли и повесили в референсы студии.",
-    hr: "Задача: экономический фестиваль, где решения принимают несколько лиц. Решение: на каждом этапе согласовывал объём, сроки и договорённости. Результат: проект принят и опубликован на сайте студии как референс. Параллельно вёл ещё два веб-проекта.",
-    tech: "Три веб-проекта одновременно: на каждом объём и приёмка по этапам.",
+    title: { ru: "Студия Лебедева", en: "Art. Lebedev Studio" },
+    role: {
+      ru: "руководитель проекта · крупный фестиваль",
+      en: "project lead · major festival",
+    },
+    url: "https://www.artlebedev.ru/people/rdjF4c/",
+    curious: {
+      ru: "Фестиваль и несколько человек, у которых последнее слово. Я вёл проект и согласовывал каждый этап. Работа вышла на сайте студии как референс, и это один из итогов, которыми я горжусь.",
+      en: "A festival and several people who hold the final say. I led the project and agreed every stage. The work went up on the studio's site as a reference, and it is one of the results I am proud of.",
+    },
+    hr: {
+      ru: "Экономический фестиваль, несколько лиц принимают решения, и объём легко расползается. Я согласовывал объём, сроки и договорённости на каждом этапе и параллельно вёл ещё два веб-проекта. Работа принята и опубликована на сайте студии как референс.",
+      en: "An economic festival with several decision-makers, where scope easily drifts. I agreed scope, timing, and terms at every stage while running two other web projects in parallel. The work was accepted and published on the studio's site as a reference.",
+    },
+    tech: { ru: "", en: "" },
   },
   {
     kind: "pm",
-    title: "Century 21",
-    role: "лид внедрения цифровых решений",
+    title: { ru: "Century 21", en: "Century 21" },
+    role: {
+      ru: "лид внедрения цифровых решений",
+      en: "lead for digital solution rollout",
+    },
     url: "https://www.century21.ru",
-    curious: "Пятьдесят франчайзи, и у каждого своё «давайте внедрять». Свёл в одну методику вместо пятидесяти разговоров.",
-    hr: "Задача: 50+ франчайзи, у каждого отдельное внедрение. Решение: единая методология работы с цифровыми сервисами и обучение команд партнёров. Результат: переход с разовых внедрений на регулярное использование.",
-    tech: "Работал на стыке продаж, маркетинга и техподдержки: переводил задачи партнёров в технические решения и обратно.",
+    curious: {
+      ru: "Пятьдесят франчайзи, и у каждого своё представление о том, как внедрять новое. Я собрал единую методику и обучил команды, чтобы партнёры пользовались ею сами, а не только в момент запуска.",
+      en: "Fifty franchisees, each with their own idea of how to adopt something new. I built one method and trained the teams so partners use it on their own, not only at launch.",
+    },
+    hr: {
+      ru: "Более пятидесяти франчайзи, у каждого отдельное внедрение: дорого, и результат не закрепляется. Я разработал единую методику работы с цифровыми сервисами и обучил команды партнёров. Сеть перешла от разовых внедрений к регулярному использованию.",
+      en: "More than fifty franchisees, each with a one-off rollout: expensive, and the results did not stick. I built one method for working with digital services and trained partner teams. The network moved from one-off rollouts to regular use.",
+    },
+    tech: { ru: "", en: "" },
   },
   {
     kind: "pm",
-    title: "Библиотека в Ташкенте",
-    role: "координатор проекта · поставка оборудования",
+    title: {
+      ru: "Библиотека в Ташкенте",
+      en: "Library in Tashkent",
+    },
+    role: {
+      ru: "координатор проекта · поставка оборудования",
+      en: "project coordinator · equipment supply",
+    },
     url: "",
-    curious: "Открытие библиотеки первого сентября не перенесёшь. Поэтому три вендора одновременно, английский и скидка 40%.",
-    hr: "Задача: открыть библиотеку к 1 сентября 2023. Решение: три переписки с вендорами, включая Cisco и HPE, на английском по американским деловым правилам. Результат: открытие в срок и максимальная скидка на оборудование 40%.",
-    tech: "Техническая сторона: согласование поставки оборудования Cisco и HPE.",
+    curious: {
+      ru: "Дату открытия библиотеки назначили на 1 сентября, и сдвинуть её было нельзя. Я вёл переписку с тремя поставщиками на английском и добился скидки 40%. Открылись вовремя.",
+      en: "The library opening was set for 1 September and could not move. I ran correspondence with three vendors in English and secured a 40% discount. We opened on time.",
+    },
+    hr: {
+      ru: "Библиотеку нужно было открыть к 1 сентября 2023, оборудование шло от нескольких поставщиков, переписка велась на английском. Я параллельно вёл три переписки, включая Cisco и HPE, по деловым правилам США. Открытие состоялось в срок, а на оборудование удалось получить максимальную скидку 40%.",
+      en: "The library had to open by 1 September 2023, with equipment from several vendors and correspondence in English. I ran three threads in parallel, including Cisco and HPE, under US business norms. The opening happened on time, and we secured the maximum 40% discount on equipment.",
+    },
+    tech: {
+      ru: "Согласование поставки оборудования Cisco и HPE.",
+      en: "Coordinating Cisco and HPE equipment supply.",
+    },
   },
   {
     kind: "pm",
-    title: "JULO",
-    role: "менеджер цифрового продукта · запуск агентства",
+    title: { ru: "JULO", en: "JULO" },
+    role: {
+      ru: "менеджер цифрового продукта · запуск агентства",
+      en: "digital product manager · agency launch",
+    },
     url: "https://julo.agency",
-    curious: "Агентство без офиса, без входящих и без репутации. Зато с партнёром и записной книжкой знакомых.",
-    hr: "Задача: запуск без входящего потока и репутации. Решение: личные продажи и работа без офиса. Результат: агентство вышло на стабильную работу.",
-    tech: "",
+    curious: {
+      ru: "Мы запускали агентство вдвоём с партнёром: ни офиса, ни входящих заявок, ни репутации. Клиентов находили через личные знакомства. Это был честный курс продаж и работы с ожиданиями.",
+      en: "My partner and I launched an agency with no office, no inbound leads, and no reputation. Clients came through personal contacts. It was an honest course in sales and managing expectations.",
+    },
+    hr: {
+      ru: "Агентство запускали без входящего потока и без имени. Я выстроил личные продажи и работу без офиса. Агентство вышло на стабильную работу.",
+      en: "The agency launched with no inbound flow and no name. I built personal sales and ran it without an office. The agency reached steady work.",
+    },
+    tech: { ru: "", en: "" },
   },
   {
     kind: "study",
-    title: "Stellar Burgers",
-    role: "учебный проект · фронтенд",
+    title: { ru: "Stellar Burgers", en: "Stellar Burgers" },
+    role: {
+      ru: "учебный проект · фронтенд",
+      en: "study project · frontend",
+    },
     url: "https://github.com/illiaGoncharov/react-burger",
-    curious: "Космические бургеры: собираешь, перетаскиваешь и смотришь, как заказ едет на кухню.",
-    hr: "Учебный проект Практикума, не коммерческий продукт. Показывает, как строю интерфейс с живыми статусами.",
-    tech: "React, Redux Toolkit, свой WebSocket для статусов заказа, drag-and-drop.",
+    curious: {
+      ru: "Учебное приложение: бургер собирается перетаскиванием, а статус заказа обновляется в реальном времени.",
+      en: "A study app: you build the burger by dragging, and the order status updates in real time.",
+    },
+    hr: {
+      ru: "Учебный проект Практикума, не коммерческий продукт. Показывает, как я строю интерфейс с живыми статусами.",
+      en: "A Praktikum study project, not a commercial product. It shows how I build interfaces with live status.",
+    },
+    tech: {
+      ru: "React, TypeScript, Redux Toolkit. WebSocket: статусы без перезагрузки. Drag-and-drop: сборка бургера.",
+      en: "React, TypeScript, Redux Toolkit. WebSocket for live status. Drag-and-drop for building the burger.",
+    },
   },
   {
     kind: "study",
-    title: "Mesto",
-    role: "учебный проект · бэкенд",
+    title: { ru: "Mesto", en: "Mesto" },
+    role: {
+      ru: "учебный проект · бэкенд",
+      en: "study project · backend",
+    },
     url: "https://github.com/illiaGoncharov/mesto-project-plus",
-    curious: "Мини-соцсеть из карточек мест: фото, лайки и свой профиль.",
-    hr: "Учебный бэкенд: API собирал сам, ревьюер проверял каждую итерацию и всегда находил что проверить.",
-    tech: "TypeScript, Express, MongoDB. Роуты, модели, валидация.",
+    curious: {
+      ru: "Учебный бэкенд для мини-соцсети: карточки мест, лайки, профиль пользователя.",
+      en: "A study backend for a small social app: place cards, likes, a user profile.",
+    },
+    hr: {
+      ru: "Учебный бэкенд: API собирал сам, ревьюер проверял каждую итерацию.",
+      en: "A study backend: I built the API myself, and a reviewer checked every iteration.",
+    },
+    tech: {
+      ru: "TypeScript, Express, MongoDB. Роуты и модели по слоям. Валидация на входе.",
+      en: "TypeScript, Express, MongoDB. Routes and models in layers. Validation at the edge.",
+    },
   },
   {
     kind: "note",
-    title: "Заметка",
+    title: { ru: "Точка", en: "Dot" },
     url: "",
-    curious: "Точка без ссылки. Идеи пока живут здесь, а не в таск-трекере, который никто не открывает.",
-    hr: "",
-    tech: "",
+    curious: {
+      ru: "Просто точка, без особого смысла.",
+      en: "Just a dot with no special meaning.",
+    },
+    hr: { ru: "", en: "" },
+    tech: { ru: "", en: "" },
   },
   {
     kind: "note",
-    title: "Черновик",
+    title: {
+      ru: "Черновик: Фасадоход",
+      en: "Draft: Facade Walk",
+    },
     url: "",
-    curious: "Здесь будет идея, которой ещё рано быть проектом.",
-    hr: "",
-    tech: "",
+    curious: {
+      ru: "Идея, которая пока не стала проектом. Вы гуляете по городу, находите на фасаде архитектурную деталь, например метопу или сандрик, фотографируете, и она попадает в вашу коллекцию. Чем реже находка, тем больше очков. Из двадцати деталей можно собрать собственный фасад: строго исторический или с готическим карнизом и башней модерна.",
+      en: "An idea that is not a project yet. You walk the city, spot an architectural detail on a facade, say a metope or a sandrik, take a photo, and it joins your collection. The rarer the find, the more points. From twenty pieces you can build your own facade: strictly historical, or a gothic cornice with an Art Nouveau tower.",
+    },
+    hr: {
+      ru: "Идея: сохранить то, что исчезает из городского ландшафта, и превратить прогулку в игру. MVP: карта, камера, каталог находок, 2D-конструктор фасада. Начать с одного района и ручной классификации.",
+      en: "The idea: keep what is vanishing from the cityscape and turn a walk into a game. MVP: map, camera, catalog of finds, 2D facade builder. Start with one district and manual classification.",
+    },
+    tech: {
+      ru: "Пока мысль. React Native и Expo. Firebase на старте. TensorFlow Lite или Teachable Machine. Конструктор на react-native-svg. Админка на Retool.",
+      en: "Still a thought. React Native and Expo. Firebase at the start. TensorFlow Lite or Teachable Machine. Builder on react-native-svg. Admin on Retool.",
+    },
   },
   {
     kind: "note",
-    title: "Потом",
+    title: {
+      ru: "Черновик: косметический помощник",
+      en: "Draft: Cosmetics Helper",
+    },
     url: "",
-    curious: "Пока в статусе «потом». Это честнее, чем «скоро».",
-    hr: "",
-    tech: "",
+    curious: {
+      ru: "Ещё одна идея, пока на уровне заметки. Вводишь косметическое средство, из аптеки или из магазина, и получаешь список аналогов. Можно указать, чего в составе быть не должно, и подборка исключит всё, где этот компонент есть.",
+      en: "Another idea, still at the note stage. You enter a cosmetic product, from a pharmacy or a store, and get a list of analogues. You can also name what must not be in the formula, and the list drops anything that contains it.",
+    },
+    hr: {
+      ru: "Идея: подбирать аналоги косметики по составу с учётом личных ограничений. MVP: поиск средства, список аналогов по составу, фильтр для исключения нежелательного компонента.",
+      en: "The idea: find analogues of a cosmetic product by formula, with personal restrictions in mind. MVP: product search, a list of analogues by formula, and a filter to exclude an unwanted ingredient.",
+    },
+    tech: {
+      ru: "Пока мысль. Нужна база составов и сопоставление ингредиентов. Платформа и стек ещё не выбраны.",
+      en: "Still a thought. It needs a database of formulas and ingredient matching. Platform and stack are not chosen yet.",
+    },
   },
   {
     kind: "link",
-    title: "GitHub",
+    title: { ru: "GitHub", en: "GitHub" },
     url: "https://github.com/illiaGoncharov",
-    curious: "Код, учебное и пет-проекты. Всё, что можно показать, открыто.",
-    hr: "",
-    tech: "Публичные репозитории. Закрытые клиентские проекты и NDA сюда не входят.",
+    curious: {
+      ru: "Код, учебные и личные проекты. Всё, что можно показать, открыто.",
+      en: "Code, study work, and personal projects. Whatever can be shown is public.",
+    },
+    hr: { ru: "", en: "" },
+    tech: {
+      ru: "Публичные репозитории. Закрытые клиентские проекты и NDA сюда не входят.",
+      en: "Public repos. Client work under NDA stays out.",
+    },
   },
   {
     kind: "link",
-    title: "Telegram",
+    title: { ru: "Telegram", en: "Telegram" },
     url: "https://t.me/binarygraph",
-    curious: "Самый короткий путь до меня.",
-    hr: "",
-    tech: "",
+    curious: {
+      ru: "Самый быстрый способ связаться.",
+      en: "The quickest way to reach me.",
+    },
+    hr: { ru: "", en: "" },
+    tech: { ru: "", en: "" },
   },
   {
     kind: "link",
-    title: "Почта",
+    title: { ru: "Почта", en: "Email" },
     url: "mailto:ilia.m.goncharov@gmail.com",
-    curious: "Если разговор длиннее трёх сообщений.",
-    hr: "",
-    tech: "",
+    curious: {
+      ru: "Если разговор не помещается в три сообщения.",
+      en: "When the conversation needs more than three messages.",
+    },
+    hr: { ru: "", en: "" },
+    tech: { ru: "", en: "" },
   },
 ];
 
 export const DOSSIER = [
-  { key: "curious", label: "для любопытных" },
-  { key: "hr", label: "для нанимающих" },
-  { key: "tech", label: "для инженеров" },
+  { key: "curious", label: { ru: "для любопытных", en: "for the curious" } },
+  { key: "hr", label: { ru: "для нанимающих", en: "for hiring" } },
+  { key: "tech", label: { ru: "для инженеров", en: "for engineers" } },
 ];
+
+/** Берёт строку текущего языка из поля { ru, en } или обычной строки. */
+export function pick(field, lang) {
+  if (field == null) return "";
+  if (typeof field === "string") return field;
+  return field[lang] || field.ru || "";
+}
+
+/** Слой есть, если хотя бы на одном языке не пустой. */
+export function hasLayer(field) {
+  if (!field) return false;
+  if (typeof field === "string") return Boolean(field);
+  return Boolean(field.ru || field.en);
+}

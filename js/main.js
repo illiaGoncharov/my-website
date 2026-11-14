@@ -2,24 +2,38 @@ import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { DOSSIER, items } from "./content.js?v=16";
-import { background, sample } from "./palette.js";
-import { tickTabIcon } from "./favicon.js";
-import { playHover, unlockSound } from "./sound.js?v=34";
+import { DOSSIER, UI, hasLayer, items, pick } from "./content.js?v=28";
+import { background, sample } from "./palette.js?v=2";
+import { tickTabIcon } from "./favicon.js?v=2";
+import { playHover, setUiLabels, unlockSound } from "./sound.js?v=36";
 
 const view = document.getElementById("view");
 const labelsRoot = document.getElementById("labels");
+const leadEl = document.querySelector("#hint .lead");
+const keyEl = document.querySelector("#hint .key");
+const langButtons = [...document.querySelectorAll("#lang button[data-lang]")];
 
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
-const CHARS_PER_FRAME = 4;
+const CHARS_PER_FRAME = 6;
 const SPIKE_GAP_MS = 340;
 const HOVER_PX = 160;
+const KIND_ORDER = ["dev", "art", "pm", "study", "note", "link"];
+
+function detectLang() {
+  try {
+    const saved = sessionStorage.getItem("site-lang");
+    if (saved === "en" || saved === "ru") return saved;
+  } catch {
+    // Приватный режим может запретить storage.
+  }
+  const list = [...(navigator.languages || []), navigator.language || ""];
+  if (list.some((code) => String(code).toLowerCase().startsWith("ru"))) return "ru";
+  return "en";
+}
+
+let lang = detectLang();
 
 document.body.style.background = background;
-for (const dot of document.querySelectorAll("#hint i")) {
-  const [r, g, b] = sample(dot.dataset.kind, 0.5);
-  dot.style.background = `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
-}
 const renderer = new THREE.WebGLRenderer({ canvas: view, antialias: true, powerPreference: "high-performance" });
 renderer.setClearColor(background);
 const scene = new THREE.Scene();
@@ -76,6 +90,7 @@ const dummy = new THREE.Object3D();
 // Каждый цвет живёт в своей небольшой зоне. Петля короче зоны, поэтому куб не уходит к чужим.
 const CLOUDS = {
   dev: { c: [-4.2, 1.0, -1], r: [1.7, 1.4, 1.55] },
+  art: { c: [-3.7, -2.0, 0.5], r: [0.9, 0.7, 0.8] },
   pm: { c: [-0.6, -1.7, -2.5], r: [1.7, 1.4, 1.55] },
   study: { c: [4.6, 0.9, -0.6], r: [1.15, 0.95, 1.1] },
   note: { c: [1.3, 2.45, 0.6], r: [1.05, 0.75, 0.85] },
@@ -128,35 +143,90 @@ const labelEls = items.map((item) => {
   el.className = "label";
   el.hidden = true;
   const title = document.createElement("b");
-  title.textContent = item.title;
-  const blocks = DOSSIER.filter((layer) => item[layer.key]).map((layer) => {
+  const blocks = DOSSIER.filter((layer) => hasLayer(item[layer.key])).map((layer) => {
     const section = document.createElement("section");
     section.hidden = true;
     const who = document.createElement("span");
     who.className = "who";
-    who.textContent = layer.label;
     const desc = document.createElement("p");
     const typed = document.createElement("span");
     desc.append(typed);
     section.append(who, desc);
-    return { section, typed, full: item[layer.key] };
+    return { section, typed, who, key: layer.key, full: "" };
   });
   const caret = document.createElement("i");
   caret.className = "caret";
   const look = document.createElement("a");
-  look.textContent = "посмотреть";
   look.target = "_blank";
   look.rel = "noopener";
   look.hidden = !item.url;
   if (item.url) look.href = item.url;
   const role = document.createElement("em");
   role.className = "role";
-  role.textContent = item.role || "";
-  role.hidden = !item.role;
   el.append(title, role, ...blocks.map((block) => block.section), look);
   labelsRoot.append(el);
-  return { el, blocks, caret };
+  return { el, blocks, caret, title, role, look, item };
 });
+
+function paintLegend(ui) {
+  if (!keyEl) return;
+  keyEl.replaceChildren();
+  KIND_ORDER.forEach((kind, index) => {
+    const dot = document.createElement("i");
+    dot.dataset.kind = kind;
+    const [r, g, b] = sample(kind, 0.5);
+    dot.style.background = `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
+    keyEl.append(dot, document.createTextNode(ui.kinds[kind] || kind));
+    if (index < KIND_ORDER.length - 1) keyEl.append(document.createTextNode(", "));
+  });
+}
+
+function applyLang(next) {
+  lang = next === "en" ? "en" : "ru";
+  const ui = UI[lang];
+  document.documentElement.lang = lang;
+  document.title = ui.title;
+  if (leadEl) leadEl.textContent = ui.lead;
+  paintLegend(ui);
+  setUiLabels({
+    soundOn: ui.soundOn,
+    soundOff: ui.soundOff,
+    rhythms: ui.rhythms,
+  });
+  for (const btn of langButtons) {
+    btn.setAttribute("aria-pressed", String(btn.dataset.lang === lang));
+  }
+  for (const card of labelEls) {
+    const { item } = card;
+    card.title.textContent = pick(item.title, lang);
+    const roleText = pick(item.role, lang);
+    card.role.textContent = roleText;
+    card.role.hidden = !roleText;
+    card.look.textContent = ui.look;
+    for (const block of card.blocks) {
+      const layer = DOSSIER.find((entry) => entry.key === block.key);
+      block.who.textContent = pick(layer?.label, lang);
+      block.full = pick(item[block.key], lang);
+      block.section.hidden = !block.full;
+    }
+  }
+  if (focus >= 0) {
+    typedCount = dossierLength(labelEls[focus].blocks);
+    fillDossier(labelEls[focus], typedCount);
+  }
+  try {
+    sessionStorage.setItem("site-lang", lang);
+  } catch {
+    // Приватный режим может запретить storage.
+  }
+}
+
+for (const btn of langButtons) {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.lang === lang) return;
+    applyLang(btn.dataset.lang);
+  });
+}
 
 function dossierLength(blocks) {
   return blocks.reduce((sum, block) => sum + block.full.length, 0);
@@ -210,6 +280,7 @@ let pointerY = -1;
 let pointerDown = false;
 let focus = -1;
 let typedCount = 0;
+applyLang(lang);
 let fist = 0;
 let spike = 0;
 let lastSpikeAt = -Infinity;

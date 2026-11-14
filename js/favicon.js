@@ -1,6 +1,6 @@
-import { sample } from "./palette.js";
+import { sample } from "./palette.js?v=2";
 
-const KINDS = ["dev", "pm", "study", "note", "link"];
+const KINDS = ["dev", "art", "pm", "study", "note", "link"];
 const CYCLE_SEC = 18;
 const calm = matchMedia("(prefers-reduced-motion: reduce)");
 const t0 = performance.now();

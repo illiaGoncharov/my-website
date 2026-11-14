@@ -71,6 +71,31 @@
       pointer-events: none;
     }
     #hint p { margin: 0; }
+    #hint .lead-row {
+      pointer-events: auto;
+      display: flex;
+      align-items: baseline;
+    }
+    #lang {
+      display: flex;
+      align-items: baseline;
+      flex-shrink: 0;
+      margin-left: 14px;
+    }
+    #lang button + button { margin-left: 10px; }
+    #lang button,
+    #rhythm button {
+      cursor: none;
+      padding: 0;
+      border: 0;
+      background: none;
+      font: inherit;
+      font-size: 11px;
+      line-height: 1.55;
+      color: rgba(243, 236, 223, 0.34);
+    }
+    #lang button[aria-pressed="true"],
+    #rhythm button[aria-pressed="true"] { color: rgba(243, 236, 223, 0.82); }
     #sound {
       pointer-events: auto;
       cursor: none;
@@ -110,30 +135,31 @@
     #rhythm div { margin: 0; }
     #sound + div { margin-left: 14px; }
     #rhythm div button + button { margin-left: 10px; }
-    #rhythm button {
-      cursor: none;
-      padding: 0;
-      border: 0;
-      background: none;
-      font: inherit;
-      font-size: 11px;
-      line-height: 1.55;
-      color: rgba(243, 236, 223, 0.34);
-    }
-    #rhythm button[aria-pressed="true"] { color: rgba(243, 236, 223, 0.82); }
     @media (min-width: 721px) {
-      #hint .lead {
+      #hint .lead-row {
         position: fixed;
         top: 16px;
         right: 18px;
         left: auto;
         bottom: auto;
-        max-width: min(360px, calc(100vw - 36px));
+        max-width: min(420px, calc(100vw - 36px));
+        justify-content: flex-end;
+      }
+      #hint .lead {
+        margin: 0;
         text-align: right;
       }
     }
     @media (max-width: 720px) {
       #hint .lead { display: none; }
+      #hint .lead-row {
+        position: fixed;
+        left: 14px;
+        right: auto;
+        top: auto;
+        bottom: calc(26px + env(safe-area-inset-bottom));
+      }
+      #lang { margin-left: 0; }
       #hint, #rhythm {
         left: 14px;
         right: 14px;
@@ -148,9 +174,11 @@
         align-items: baseline;
         gap: 10px;
         text-align: left;
+        padding-left: 52px;
       }
       #sound { width: auto; text-align: left; padding: 8px 0; }
       #rhythm div { margin-top: 0; }
+      #lang button,
       #rhythm button { padding: 8px 0; }
     }
   </style>
@@ -160,8 +188,14 @@
   <canvas id="view"></canvas>
   <div id="labels"></div>
   <aside id="hint">
-    <p class="lead">наведите курсор на куб, чтобы открыть карточку</p>
-    <p class="key"><i data-kind="dev"></i>разработка, <i data-kind="pm"></i>продукт, <i data-kind="study"></i>учёба, <i data-kind="note"></i>заметки, <i data-kind="link"></i>ссылки</p>
+    <div class="lead-row">
+      <p class="lead">наведите курсор на куб, чтобы открыть карточку</p>
+      <div id="lang">
+        <button type="button" data-lang="ru" aria-pressed="true">ru</button>
+        <button type="button" data-lang="en" aria-pressed="false">en</button>
+      </div>
+    </div>
+    <p class="key"><i data-kind="dev"></i>разработка, <i data-kind="art"></i>арт, <i data-kind="pm"></i>продукт, <i data-kind="study"></i>учёба, <i data-kind="note"></i>заметки, <i data-kind="link"></i>ссылки</p>
   </aside>
   <aside id="rhythm">
     <button id="sound" type="button" aria-pressed="false">звук вкл</button>
@@ -179,6 +213,6 @@
     }
   }
   </script>
-  <script type="module" src="./js/main.js?v=41"></script>
+  <script type="module" src="./js/main.js?v=54"></script>
 </body>
 </html>

@@ -30,6 +30,15 @@ const VOICES = {
     click: 0.16,
     pip: true,
   },
+  art: {
+    notes: [233.08, 293.66, 349.23, 440],
+    partials: [1, 2.01, 3.99],
+    mix: [0.5, 0.2, 0.07],
+    decay: 2.8,
+    level: 0.14,
+    click: 0,
+    pip: 0,
+  },
   note: {
     notes: [110, 130.81, 146.83],
     partials: [1, 1.51, 2.01],
@@ -66,6 +75,27 @@ let nextBar = 0;
 const button = document.getElementById("sound");
 const rhythmButtons = [...document.querySelectorAll("#rhythm button[data-rhythm]")];
 
+// Подписи кнопок приходят из UI (ru/en). Пока нет applyLang — русские по умолчанию.
+let uiLabels = {
+  soundOn: "звук вкл",
+  soundOff: "звук выкл",
+  rhythms: { pulse: "удар", torn: "рваный", drops: "ноты" },
+};
+
+export function setUiLabels(next) {
+  if (!next) return;
+  uiLabels = {
+    soundOn: next.soundOn ?? uiLabels.soundOn,
+    soundOff: next.soundOff ?? uiLabels.soundOff,
+    rhythms: { ...uiLabels.rhythms, ...(next.rhythms || {}) },
+  };
+  paintButton();
+  for (const el of rhythmButtons) {
+    const name = el.dataset.rhythm;
+    if (uiLabels.rhythms[name]) el.textContent = uiLabels.rhythms[name];
+  }
+}
+
 // Ре минор: и фон, и ноты кубов, и ритм сидят в одних ступенях.
 const BEAT = 60 / 44;
 const BAR = BEAT * 4;
@@ -97,7 +127,7 @@ function paintButton() {
   if (!button) return;
   const on = enabled && armed && running();
   button.setAttribute("aria-pressed", String(on));
-  button.textContent = enabled ? "звук вкл" : "звук выкл";
+  button.textContent = enabled ? uiLabels.soundOn : uiLabels.soundOff;
 }
 
 const coarse = () =>
