@@ -318,6 +318,7 @@ function frame(now) {
 
   const amp = calm ? 0.25 : 1;
   for (let i = 0; i < items.length; i++) {
+    if (i === focus) continue;
     const home = homes[i];
     target.set(
       home.x + Math.sin(t * 0.16 + phase[i]) * 0.95 * amp,
@@ -339,8 +340,8 @@ function frame(now) {
   // Близко на экране или в объёме — мягко разъезжаются, пружина к дому возвращает обратно.
   // Куб, который сейчас читают, почти не толкаем: иначе карточка уезжает из-под взгляда.
   const sharePush = (i, j) => {
-    if (i === focus) return [0.15, 1];
-    if (j === focus) return [1, 0.15];
+    if (i === focus) return [0, 1];
+    if (j === focus) return [1, 0];
     return [1, 1];
   };
   const GAP = 108;
@@ -372,8 +373,8 @@ function frame(now) {
 
   const SPEED = 0.032;
   for (let i = 0; i < items.length; i++) {
-    vel[i].multiplyScalar(0.9);
-    if (pos[i].distanceTo(homes[i]) > 1.9) {
+    vel[i].multiplyScalar(i === focus ? 0.45 : 0.9);
+    if (i !== focus && pos[i].distanceTo(homes[i]) > 1.9) {
       gap.copy(homes[i]).sub(pos[i]).multiplyScalar(0.05);
       vel[i].add(gap);
     }
@@ -383,7 +384,7 @@ function frame(now) {
 
     const node = containers[i];
     node.group.position.copy(pos[i]);
-    node.group.rotation.set(0.5, t * 0.22 * amp + phase[i], 0.15);
+    if (i !== focus) node.group.rotation.set(0.5, t * 0.22 * amp + phase[i], 0.15);
 
     const [r, g, b] = sample(items[i].kind, t * 0.035 + i * 0.07);
     color.setRGB(r, g, b);
@@ -436,9 +437,18 @@ function frame(now) {
     const [r, g, b] = sample(items[i].kind, t * 0.035 + i * 0.07);
     ui.el.style.borderColor = `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, 0.7)`;
     const cardW = 340;
+    const cardH = ui.el.offsetHeight || 180;
     const x = Math.min(Math.max(screens[i].x, cardW / 2 + 12), w - cardW / 2 - 12);
-    const placeBelow = screens[i].y < 240;
+    const placeBelow = screens[i].y < h * 0.45 || screens[i].y < cardH + 28;
+    let y = screens[i].y;
+    if (placeBelow) {
+      const bottom = y + 18 + cardH;
+      if (bottom > h - 12) y -= bottom - (h - 12);
+    } else if (y - cardH - 16 < 12) {
+      y += 12 - (y - cardH - 16);
+    }
     screens[i].x = x;
+    screens[i].y = y;
     ui.el.style.transform = placeBelow
       ? `translate(${screens[i].x}px, ${screens[i].y}px) translate(-50%, 18px)`
       : `translate(${screens[i].x}px, ${screens[i].y}px) translate(-50%, calc(-100% - 16px))`;
