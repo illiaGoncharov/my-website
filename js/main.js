@@ -307,32 +307,43 @@ function frame(now) {
   }
 
   // Близко на экране или в объёме — мягко разъезжаются, пружина к дому возвращает обратно.
+  // Куб, который сейчас читают, почти не толкаем: иначе карточка уезжает из-под взгляда.
+  const sharePush = (i, j) => {
+    if (i === focus) return [0.15, 1];
+    if (j === focus) return [1, 0.15];
+    return [1, 1];
+  };
   const GAP = 108;
   for (let i = 0; i < items.length; i++) {
     for (let j = i + 1; j < items.length; j++) {
       gap.copy(pos[j]).sub(pos[i]);
       const reach = gap.length() || 0.001;
       if (reach < 1.45) {
-        const push = (1.45 - reach) / reach * 0.02;
-        vel[i].addScaledVector(gap, -push);
-        vel[j].addScaledVector(gap, push);
+        const push = (1.45 - reach) / reach * 0.01;
+        const [wi, wj] = sharePush(i, j);
+        vel[i].addScaledVector(gap, -push * wi);
+        vel[j].addScaledVector(gap, push * wj);
       }
       const dx = screenPts[j].x - screenPts[i].x;
       const dy = screenPts[j].y - screenPts[i].y;
       const pixels = Math.hypot(dx, dy) || 0.001;
       if (pixels >= GAP) continue;
-      const push = (GAP - pixels) / GAP * 0.04;
+      const push = (GAP - pixels) / GAP * 0.016;
       const nx = dx / pixels;
       const ny = dy / pixels;
-      vel[i].x -= nx * push;
-      vel[i].y += ny * push;
-      vel[j].x += nx * push;
-      vel[j].y -= ny * push;
+      const [wi, wj] = sharePush(i, j);
+      vel[i].x -= nx * push * wi;
+      vel[i].y += ny * push * wi;
+      vel[j].x += nx * push * wj;
+      vel[j].y -= ny * push * wj;
     }
   }
 
+  const SPEED = 0.032;
   for (let i = 0; i < items.length; i++) {
-    vel[i].multiplyScalar(0.92);
+    vel[i].multiplyScalar(0.9);
+    const speed = vel[i].length();
+    if (speed > SPEED) vel[i].multiplyScalar(SPEED / speed);
     pos[i].add(vel[i]);
 
     const node = containers[i];
