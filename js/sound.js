@@ -61,7 +61,7 @@ let bed;
 let enabled = true;
 let armed = false;
 let lastAt = 0;
-let rhythm = "none";
+const active = new Set();
 let nextBar = 0;
 const button = document.getElementById("sound");
 const rhythmButtons = [...document.querySelectorAll("#rhythm button[data-rhythm]")];
@@ -306,16 +306,22 @@ function playHit(time, ev) {
   else if (ev.hit === "drop") note(time, ev.freq, 1.1, ev.gain, dry);
 }
 
+function chosen() {
+  return ["pulse", "torn", "drops"].filter((name) => active.has(name));
+}
+
 function clock() {
   if (!enabled || !ctx || ctx.state !== "running") return;
+  const names = chosen();
+  if (!names.length) return;
   const now = ctx.currentTime;
-  const events = RHYTHMS[rhythm] || [];
-  if (!events.length) return;
   if (!nextBar) nextBar = now + 0.15;
   while (nextBar < now + 0.3) {
-    for (const ev of events) {
-      const slip = rhythm === "torn" && ev.at > 0 ? (Math.random() - 0.5) * 0.22 : 0;
-      playHit(nextBar + Math.max(0, ev.at + slip) * BEAT, ev);
+    for (const name of names) {
+      for (const ev of RHYTHMS[name]) {
+        const slip = name === "torn" && ev.at > 0 ? (Math.random() - 0.5) * 0.22 : 0;
+        playHit(nextBar + Math.max(0, ev.at + slip) * BEAT, ev);
+      }
     }
     nextBar += BAR;
   }
@@ -324,11 +330,14 @@ function clock() {
 setInterval(clock, 100);
 
 function paintRhythm() {
+  const names = chosen();
   for (const el of rhythmButtons) {
-    el.setAttribute("aria-pressed", String(el.dataset.rhythm === rhythm));
+    const name = el.dataset.rhythm;
+    const on = name === "none" ? names.length === 0 : active.has(name);
+    el.setAttribute("aria-pressed", String(on));
   }
   const caption = document.getElementById("rhythm-now");
-  if (caption) caption.textContent = RHYTHM_CAPTION[rhythm] || "";
+  if (caption) caption.textContent = names.length ? names.map((name) => RHYTHM_CAPTION[name]).join(", ") : RHYTHM_CAPTION.none;
 }
 
 function remember(on) {
@@ -355,8 +364,10 @@ if (button) {
 paintRhythm();
 for (const el of rhythmButtons) {
   el.addEventListener("click", async () => {
-    rhythm = el.dataset.rhythm;
-    nextBar = 0;
+    const name = el.dataset.rhythm;
+    if (name === "none") active.clear();
+    else if (active.has(name)) active.delete(name);
+    else active.add(name);
     paintRhythm();
     if (!enabled) {
       enabled = true;
@@ -364,7 +375,7 @@ for (const el of rhythmButtons) {
       paintButton();
     }
     await unlockSound();
-    const first = (RHYTHMS[rhythm] || [])[0];
+    const first = name !== "none" && active.has(name) ? RHYTHMS[name][0] : null;
     if (first && ctx) playHit(ctx.currentTime + 0.06, first);
   });
 }
