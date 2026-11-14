@@ -86,6 +86,8 @@ const homes = scatterHomes(items.length);
 const pos = homes.map((h) => h.clone());
 const vel = homes.map(() => new THREE.Vector3());
 const phase = homes.map((_, i) => i * 0.7);
+const screenPts = homes.map(() => new THREE.Vector3());
+const gap = new THREE.Vector3();
 
 const shellGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(0.46, 0.46, 0.46));
 const coreGeo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
@@ -256,16 +258,53 @@ function frame(now) {
   }
   hand.instanceMatrix.needsUpdate = true;
 
+  const amp = calm ? 0.25 : 1;
   for (let i = 0; i < items.length; i++) {
     const home = homes[i];
-    const amp = calm ? 0.25 : 1;
     target.set(
-      home.x + Math.sin(t * 0.28 + phase[i]) * 0.1 * amp,
-      home.y + Math.cos(t * 0.23 + phase[i]) * 0.08 * amp,
-      home.z + Math.sin(t * 0.19 + phase[i]) * 0.08 * amp,
+      home.x + Math.sin(t * 0.17 + phase[i]) * 0.95 * amp,
+      home.y + Math.cos(t * 0.13 + phase[i] * 1.3) * 0.72 * amp,
+      home.z + Math.sin(t * 0.11 + phase[i] * 0.7) * 1.1 * amp,
     );
-    vel[i].add(target.sub(pos[i]).multiplyScalar(0.04));
-    vel[i].multiplyScalar(0.86);
+    vel[i].add(target.sub(pos[i]).multiplyScalar(0.018));
+  }
+
+  for (let i = 0; i < items.length; i++) {
+    projected.copy(pos[i]).project(camera);
+    screenPts[i].set(
+      (projected.x * 0.5 + 0.5) * w,
+      (-projected.y * 0.5 + 0.5) * h,
+      projected.z,
+    );
+  }
+
+  // Близко на экране или в объёме — мягко разъезжаются, пружина к дому возвращает обратно.
+  const GAP = 108;
+  for (let i = 0; i < items.length; i++) {
+    for (let j = i + 1; j < items.length; j++) {
+      gap.copy(pos[j]).sub(pos[i]);
+      const reach = gap.length() || 0.001;
+      if (reach < 1.45) {
+        const push = (1.45 - reach) / reach * 0.02;
+        vel[i].addScaledVector(gap, -push);
+        vel[j].addScaledVector(gap, push);
+      }
+      const dx = screenPts[j].x - screenPts[i].x;
+      const dy = screenPts[j].y - screenPts[i].y;
+      const pixels = Math.hypot(dx, dy) || 0.001;
+      if (pixels >= GAP) continue;
+      const push = (GAP - pixels) / GAP * 0.04;
+      const nx = dx / pixels;
+      const ny = dy / pixels;
+      vel[i].x -= nx * push;
+      vel[i].y += ny * push;
+      vel[j].x += nx * push;
+      vel[j].y -= ny * push;
+    }
+  }
+
+  for (let i = 0; i < items.length; i++) {
+    vel[i].multiplyScalar(0.92);
     pos[i].add(vel[i]);
 
     const node = containers[i];
