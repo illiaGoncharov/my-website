@@ -162,7 +162,7 @@ export const items = [
 ];
 
 export const DOSSIER = [
-  { key: "curious", label: "для любопытных" },
+  { key: "curious", label: "для тех, кто заглянул" },
   { key: "hr", label: "для тех, кто нанимает" },
-  { key: "tech", label: "для тех, кто откроет devtools" },
+  { key: "tech", label: "для тех, кто читает код" },
 ];

@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { DOSSIER, items } from "./content.js";
+import { DOSSIER, items } from "./content.js?v=14";
 import { background, sample } from "./palette.js";
 
 const view = document.getElementById("view");
