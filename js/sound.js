@@ -88,13 +88,6 @@ const RHYTHMS = {
     { at: 3, hit: "drop", gain: 0.16, freq: 1046.5 },
   ],
 };
-const RHYTHM_CAPTION = {
-  none: "только гул, без ритма",
-  pulse: "редкий низкий удар",
-  torn: "щелчки не в ровную долю",
-  drops: "высокие ноты поверх",
-};
-
 try {
   enabled = sessionStorage.getItem("site-sound") !== "off";
 } catch {
@@ -336,8 +329,6 @@ function paintRhythm() {
     const on = name === "none" ? names.length === 0 : active.has(name);
     el.setAttribute("aria-pressed", String(on));
   }
-  const caption = document.getElementById("rhythm-now");
-  if (caption) caption.textContent = names.length ? names.map((name) => RHYTHM_CAPTION[name]).join(", ") : RHYTHM_CAPTION.none;
 }
 
 function remember(on) {

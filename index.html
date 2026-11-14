@@ -76,7 +76,7 @@
       color: rgba(243, 236, 223, 0.82);
     }
     #sound[aria-pressed="false"] { color: rgba(243, 236, 223, 0.28); }
-    #hint .key, #rhythm-now { margin-top: 3px; }
+    #hint .key { margin-top: 3px; }
     #hint i {
       display: inline-block;
       width: 7px;
@@ -96,7 +96,6 @@
     }
     #rhythm p { margin: 0; }
     #rhythm div { margin-top: 3px; }
-    #rhythm #rhythm-now { margin-top: 3px; }
     #rhythm div button + button { margin-left: 10px; }
     #rhythm button {
       cursor: none;
@@ -129,7 +128,6 @@
       <button type="button" data-rhythm="torn">рваный</button>
       <button type="button" data-rhythm="drops">ноты</button>
     </div>
-    <p id="rhythm-now">только гул, без ритма</p>
   </aside>
   <script type="importmap">
   {
@@ -139,6 +137,6 @@
     }
   }
   </script>
-  <script type="module" src="./js/main.js?v=25"></script>
+  <script type="module" src="./js/main.js?v=26"></script>
 </body>
 </html>
