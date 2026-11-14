@@ -74,11 +74,11 @@ const dummy = new THREE.Object3D();
 
 // Каждый цвет живёт в своей небольшой зоне. Петля короче зоны, поэтому куб не уходит к чужим.
 const CLOUDS = {
-  dev: { c: [-4.2, 1.0, -1], r: [1.25, 1.05, 1.15] },
-  pm: { c: [-0.6, -1.7, -2.5], r: [1.25, 1.05, 1.15] },
-  study: { c: [4.6, 0.9, -0.6], r: [0.85, 0.7, 0.85] },
-  note: { c: [1.3, 2.45, 0.6], r: [0.8, 0.55, 0.65] },
-  link: { c: [3.2, -2.15, 0.9], r: [0.8, 0.55, 0.65] },
+  dev: { c: [-4.2, 1.0, -1], r: [1.7, 1.4, 1.55] },
+  pm: { c: [-0.6, -1.7, -2.5], r: [1.7, 1.4, 1.55] },
+  study: { c: [4.6, 0.9, -0.6], r: [1.15, 0.95, 1.1] },
+  note: { c: [1.3, 2.45, 0.6], r: [1.05, 0.75, 0.85] },
+  link: { c: [3.2, -2.15, 0.9], r: [1.05, 0.75, 0.85] },
 };
 
 function scatterHomes(list) {
@@ -320,9 +320,9 @@ function frame(now) {
   for (let i = 0; i < items.length; i++) {
     const home = homes[i];
     target.set(
-      home.x + Math.sin(t * 0.16 + phase[i]) * 0.62 * amp,
-      home.y + Math.cos(t * 0.13 + phase[i] * 1.3) * 0.46 * amp,
-      home.z + Math.sin(t * 0.1 + phase[i] * 0.7) * 0.7 * amp,
+      home.x + Math.sin(t * 0.16 + phase[i]) * 0.95 * amp,
+      home.y + Math.cos(t * 0.13 + phase[i] * 1.3) * 0.7 * amp,
+      home.z + Math.sin(t * 0.1 + phase[i] * 0.7) * 1.05 * amp,
     );
     vel[i].add(target.sub(pos[i]).multiplyScalar(0.018));
   }
@@ -348,7 +348,7 @@ function frame(now) {
     for (let j = i + 1; j < items.length; j++) {
       gap.copy(pos[j]).sub(pos[i]);
       const reach = gap.length() || 0.001;
-      const kin = items[i].kind === items[j].kind ? 0.28 : 1;
+      const kin = items[i].kind === items[j].kind ? 0.45 : 1;
       if (reach < 1.45) {
         const push = (1.45 - reach) / reach * 0.01 * kin;
         const [wi, wj] = sharePush(i, j);
@@ -373,7 +373,7 @@ function frame(now) {
   const SPEED = 0.032;
   for (let i = 0; i < items.length; i++) {
     vel[i].multiplyScalar(0.9);
-    if (pos[i].distanceTo(homes[i]) > 1.25) {
+    if (pos[i].distanceTo(homes[i]) > 1.9) {
       gap.copy(homes[i]).sub(pos[i]).multiplyScalar(0.05);
       vel[i].add(gap);
     }
