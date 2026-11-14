@@ -70,7 +70,6 @@ const rhythmButtons = [...document.querySelectorAll("#rhythm button[data-rhythm]
 const BEAT = 60 / 44;
 const BAR = BEAT * 4;
 const RHYTHMS = {
-  none: [],
   pulse: [
     { at: 0, hit: "thud", gain: 0.55 },
     { at: 2, hit: "thud", gain: 0.28 },
@@ -323,11 +322,8 @@ function clock() {
 setInterval(clock, 100);
 
 function paintRhythm() {
-  const names = chosen();
   for (const el of rhythmButtons) {
-    const name = el.dataset.rhythm;
-    const on = name === "none" ? names.length === 0 : active.has(name);
-    el.setAttribute("aria-pressed", String(on));
+    el.setAttribute("aria-pressed", String(active.has(el.dataset.rhythm)));
   }
 }
 
@@ -356,8 +352,7 @@ paintRhythm();
 for (const el of rhythmButtons) {
   el.addEventListener("click", async () => {
     const name = el.dataset.rhythm;
-    if (name === "none") active.clear();
-    else if (active.has(name)) active.delete(name);
+    if (active.has(name)) active.delete(name);
     else active.add(name);
     paintRhythm();
     if (!enabled) {
@@ -366,7 +361,7 @@ for (const el of rhythmButtons) {
       paintButton();
     }
     await unlockSound();
-    const first = name !== "none" && active.has(name) ? RHYTHMS[name][0] : null;
+    const first = active.has(name) ? RHYTHMS[name][0] : null;
     if (first && ctx) playHit(ctx.currentTime + 0.06, first);
   });
 }
