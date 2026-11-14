@@ -95,7 +95,8 @@ try {
 
 function paintButton() {
   if (!button) return;
-  button.setAttribute("aria-pressed", String(enabled));
+  const on = enabled && armed && running();
+  button.setAttribute("aria-pressed", String(on));
   button.textContent = enabled ? "звук вкл" : "звук выкл";
 }
 
@@ -275,6 +276,7 @@ export function primeSound() {
   if (!running()) return false;
   armed = true;
   setBed(true);
+  paintButton();
   return true;
 }
 
@@ -289,6 +291,7 @@ export function unlockSound() {
     if (!running()) return false;
     armed = true;
     setBed(true);
+    paintButton();
     return true;
   }).catch(() => false);
 }

@@ -4,8 +4,8 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { DOSSIER, items } from "./content.js?v=16";
 import { background, sample } from "./palette.js";
-import "./favicon.js";
-import { playHover, unlockSound } from "./sound.js?v=33";
+import { tickTabIcon } from "./favicon.js";
+import { playHover, unlockSound } from "./sound.js?v=34";
 
 const view = document.getElementById("view");
 const labelsRoot = document.getElementById("labels");
@@ -540,6 +540,7 @@ function frame(now) {
   glitch.uniforms.uTime.value = t;
   glitch.uniforms.uGlitch.value = calm ? 0 : spike;
 
+  tickTabIcon(now);
   composer.render();
 }
 
