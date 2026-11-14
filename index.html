@@ -65,17 +65,18 @@
       cursor: none;
       display: block;
       width: 100%;
-      margin: 0 0 4px;
+      margin: 0;
       padding: 0;
       border: 0;
       background: none;
       font: inherit;
       font-size: 11px;
+      line-height: 1.55;
       text-align: right;
       color: rgba(243, 236, 223, 0.82);
     }
     #sound[aria-pressed="false"] { color: rgba(243, 236, 223, 0.28); }
-    #hint .key { margin-top: 3px; }
+    #hint .key, #rhythm-now { margin-top: 3px; }
     #hint i {
       display: inline-block;
       width: 7px;
@@ -93,15 +94,18 @@
       color: rgba(243, 236, 223, 0.5);
       text-align: right;
     }
-    #rhythm p { margin: 0 0 3px; }
+    #rhythm p { margin: 0; }
+    #rhythm div { margin-top: 3px; }
+    #rhythm #rhythm-now { margin-top: 3px; }
+    #rhythm div button + button { margin-left: 10px; }
     #rhythm button {
       cursor: none;
-      margin-left: 10px;
       padding: 0;
       border: 0;
       background: none;
       font: inherit;
       font-size: 11px;
+      line-height: 1.55;
       color: rgba(243, 236, 223, 0.34);
     }
     #rhythm button[aria-pressed="true"] { color: rgba(243, 236, 223, 0.82); }
