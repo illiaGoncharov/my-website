@@ -10,7 +10,6 @@ const view = document.getElementById("view");
 const labelsRoot = document.getElementById("labels");
 
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
-const LABEL_PX = 160;
 const CHARS_PER_FRAME = 4;
 const SPIKE_GAP_MS = 340;
 
@@ -204,8 +203,8 @@ const handHit = new THREE.Vector3();
 const projected = new THREE.Vector3();
 const target = new THREE.Vector3();
 
-let pointerX = innerWidth / 2;
-let pointerY = innerHeight / 2;
+let pointerX = -1;
+let pointerY = -1;
 let pointerDown = false;
 let focus = -1;
 let typedCount = 0;
@@ -233,6 +232,14 @@ function chromeTop() {
     top = Math.min(top, node.getBoundingClientRect().top - 10);
   }
   return top;
+}
+
+function cubeReach(i) {
+  const depth = Math.max(camera.position.distanceTo(pos[i]), 1);
+  const scale = containers[i].group.scale.x || 1;
+  const world = 0.23 * Math.sqrt(3) * scale;
+  const px = (world * innerHeight) / (2 * Math.tan((42 * Math.PI) / 360) * depth);
+  return px + 12;
 }
 
 function project(v, width, height) {
@@ -429,14 +436,16 @@ function frame(now) {
   }
 
   let nearest = drag?.moved ? -1 : labelUnderPointer();
-  let nearestD = LABEL_PX;
+  let nearestD = Infinity;
   const screens = pos.map((p) => project(p, w, h));
   if (drag?.moved) nearest = -1;
   else if (nearest < 0) {
     for (let i = 0; i < items.length; i++) {
       if (screens[i].behind) continue;
       const d = Math.hypot(screens[i].x - pointerX, screens[i].y - pointerY);
-      if (d < nearestD) { nearestD = d; nearest = i; }
+      if (d > cubeReach(i) || d >= nearestD) continue;
+      nearestD = d;
+      nearest = i;
     }
   }
   if (nearest !== focus) {
