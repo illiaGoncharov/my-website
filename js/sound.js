@@ -202,11 +202,19 @@ function setBed(on) {
 }
 
 export function unlockSound() {
+  if (!enabled) return Promise.resolve(false);
   if (!ctx) build();
   const pending = ctx.state === "suspended" ? ctx.resume() : Promise.resolve();
-  armed = true;
-  return pending.then(() => setBed(enabled));
+  return pending.then(() => {
+    if (ctx.state !== "running") return false;
+    armed = true;
+    setBed(true);
+    return true;
+  }).catch(() => false);
 }
+
+// Браузер часто разрешает звук сам, если сайт уже открывали. Иначе дождёмся жеста.
+if (enabled) unlockSound();
 
 function burst(time, dur, gainVal, freq, type) {
   const src = ctx.createBufferSource();
@@ -338,12 +346,15 @@ function remember(on) {
 if (button) {
   paintButton();
   button.addEventListener("click", async () => {
-    const wasArmed = armed;
-    await unlockSound();
-    if (wasArmed || !enabled) enabled = !enabled;
-    if (!enabled) nextBar = 0;
+    if (armed && enabled) {
+      enabled = false;
+      nextBar = 0;
+      setBed(false);
+    } else {
+      enabled = true;
+      await unlockSound();
+    }
     remember(enabled);
-    setBed(enabled);
     paintButton();
   });
 }
