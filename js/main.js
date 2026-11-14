@@ -72,24 +72,21 @@ composer.addPass(new ShaderPass(glitch));
 const color = new THREE.Color();
 const dummy = new THREE.Object3D();
 
-// Боевые (клиенты, работа, PM-кейсы) слева, пет (свои эксперименты и учёба) справа,
-// заметки и ссылки живут по краям между ними.
-const groupOf = (item) => {
-  if (item.kind === "study" || item.pet) return "pet";
-  if (item.kind === "note" || item.kind === "link") return "misc";
-  return "live";
-};
-
+// Каждый цвет живёт в своей небольшой зоне. Петля короче зоны, поэтому куб не уходит к чужим.
 const CLOUDS = {
-  live: { c: [-3.2, 0, -2], r: [3.9, 3.0, 5.0] },
-  pet: { c: [5.2, -0.4, -1], r: [2.2, 2.0, 3.0] },
-  misc: { c: [0.9, 0, 1.6], r: [1.6, 3.8, 1.4] },
+  dev: { c: [-4.2, 1.0, -1], r: [1.25, 1.05, 1.15] },
+  pm: { c: [-0.6, -1.7, -2.5], r: [1.25, 1.05, 1.15] },
+  study: { c: [4.6, 0.9, -0.6], r: [0.85, 0.7, 0.85] },
+  note: { c: [1.3, 2.45, 0.6], r: [0.8, 0.55, 0.65] },
+  link: { c: [3.2, -2.15, 0.9], r: [0.8, 0.55, 0.65] },
 };
 
 function scatterHomes(list) {
   const golden = Math.PI * (3 - Math.sqrt(5));
-  const members = { live: [], pet: [], misc: [] };
-  list.forEach((item, index) => members[groupOf(item)].push(index));
+  const members = {};
+  list.forEach((item, index) => {
+    (members[item.kind] ??= []).push(index);
+  });
   const homes = new Array(list.length);
   for (const [name, indexes] of Object.entries(members)) {
     const { c, r } = CLOUDS[name];
@@ -323,9 +320,9 @@ function frame(now) {
   for (let i = 0; i < items.length; i++) {
     const home = homes[i];
     target.set(
-      home.x + Math.sin(t * 0.11 + phase[i]) * 1.75 * amp,
-      home.y + Math.cos(t * 0.085 + phase[i] * 1.3) * 1.3 * amp,
-      home.z + Math.sin(t * 0.07 + phase[i] * 0.7) * 2.2 * amp,
+      home.x + Math.sin(t * 0.16 + phase[i]) * 0.62 * amp,
+      home.y + Math.cos(t * 0.13 + phase[i] * 1.3) * 0.46 * amp,
+      home.z + Math.sin(t * 0.1 + phase[i] * 0.7) * 0.7 * amp,
     );
     vel[i].add(target.sub(pos[i]).multiplyScalar(0.018));
   }
@@ -351,8 +348,9 @@ function frame(now) {
     for (let j = i + 1; j < items.length; j++) {
       gap.copy(pos[j]).sub(pos[i]);
       const reach = gap.length() || 0.001;
+      const kin = items[i].kind === items[j].kind ? 0.28 : 1;
       if (reach < 1.45) {
-        const push = (1.45 - reach) / reach * 0.01;
+        const push = (1.45 - reach) / reach * 0.01 * kin;
         const [wi, wj] = sharePush(i, j);
         vel[i].addScaledVector(gap, -push * wi);
         vel[j].addScaledVector(gap, push * wj);
@@ -361,7 +359,7 @@ function frame(now) {
       const dy = screenPts[j].y - screenPts[i].y;
       const pixels = Math.hypot(dx, dy) || 0.001;
       if (pixels >= GAP) continue;
-      const push = (GAP - pixels) / GAP * 0.016;
+      const push = (GAP - pixels) / GAP * 0.016 * kin;
       const nx = dx / pixels;
       const ny = dy / pixels;
       const [wi, wj] = sharePush(i, j);
@@ -375,6 +373,10 @@ function frame(now) {
   const SPEED = 0.032;
   for (let i = 0; i < items.length; i++) {
     vel[i].multiplyScalar(0.9);
+    if (pos[i].distanceTo(homes[i]) > 1.25) {
+      gap.copy(homes[i]).sub(pos[i]).multiplyScalar(0.05);
+      vel[i].add(gap);
+    }
     const speed = vel[i].length();
     if (speed > SPEED) vel[i].multiplyScalar(SPEED / speed);
     pos[i].add(vel[i]);
