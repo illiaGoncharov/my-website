@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { DOSSIER, items } from "./content.js?v=14";
+import { DOSSIER, items } from "./content.js?v=16";
 import { background, sample } from "./palette.js";
 import { playHover, unlockSound } from "./sound.js?v=15";
 
