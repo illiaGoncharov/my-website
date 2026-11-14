@@ -93,6 +93,8 @@
       font-size: 11px;
       line-height: 1.55;
       color: rgba(243, 236, 223, 0.34);
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     #lang button[aria-pressed="true"],
     #rhythm button[aria-pressed="true"] { color: rgba(243, 236, 223, 0.82); }
@@ -118,10 +120,13 @@
       border-radius: 50%;
       vertical-align: middle;
     }
+    #hint .lead-row { z-index: 30; }
     #rhythm {
       position: fixed;
       right: 18px;
       bottom: 16px;
+      z-index: 20;
+      pointer-events: auto;
       display: flex;
       align-items: baseline;
       justify-content: flex-end;
@@ -157,7 +162,7 @@
         left: 14px;
         right: auto;
         top: auto;
-        bottom: calc(26px + env(safe-area-inset-bottom));
+        bottom: calc(54px + env(safe-area-inset-bottom));
       }
       #lang { margin-left: 0; }
       #hint, #rhythm {
@@ -174,12 +179,16 @@
         align-items: baseline;
         gap: 10px;
         text-align: left;
-        padding-left: 52px;
+        padding-left: 0;
       }
       #sound { width: auto; text-align: left; padding: 8px 0; }
       #rhythm div { margin-top: 0; }
       #lang button,
-      #rhythm button { padding: 8px 0; }
+      #rhythm button {
+        padding: 10px 6px;
+        min-width: 40px;
+        min-height: 40px;
+      }
     }
   </style>
 </head>
@@ -213,6 +222,6 @@
     }
   }
   </script>
-  <script type="module" src="./js/main.js?v=54"></script>
+  <script type="module" src="./js/main.js?v=57"></script>
 </body>
 </html>

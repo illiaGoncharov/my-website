@@ -125,6 +125,27 @@ export const items = [
   },
   {
     kind: "dev",
+    title: { ru: "Самокат × Blazar", en: "Samokat × Blazar" },
+    role: {
+      ru: "продакт + разработка · Музей Москвы",
+      en: "product + development · Museum of Moscow",
+    },
+    url: "https://github.com/illiaGoncharov/samokat-art",
+    curious: {
+      ru: "К выставке в Музее Москвы (Самокат × Blazar) в сжатый срок шли четыре веб-части одной истории. Самый напряжённый кусок — промокоды и API под поток посетителей. Два других контура мы упростили по гайдлайнам Самоката, чтобы успеть четвёртый: веб-VR по QR для работы художницы.",
+      en: "For an exhibition at the Museum of Moscow (Samokat × Blazar), four web pieces of one story had to ship on a tight deadline. The hottest part was promo codes and an API for visitor traffic. We streamlined two other surfaces to Samokat guidelines so we could ship the fourth: web VR via QR for an artist's work.",
+    },
+    hr: {
+      ru: "К выставке в Музее Москвы (Самокат × Blazar) в сжатые сроки нужно было отдать четыре веб-части. Я спроектировал структуру и REST API для сценария с промокодами, который должен стабильно работать при публичной нагрузке, и согласовал материалы с регламентами Самоката. Два промо-контура оптимизировал и привёл к гайдлайнам, чтобы высвободить время на четвёртый: веб-VR-инсталляцию для художницы. Сравнил варианты технологий, собрал VR-сцену на Three.js; посетители заходили в историю по QR. Всё уложилось в срок.",
+      en: "For the Museum of Moscow exhibition (Samokat × Blazar), four web deliverables had to ship on a tight timeline. I designed the structure and a REST API for promo-code flows that had to hold up under public load, and aligned materials with Samokat brand rules. I optimized two promo surfaces to guidelines to free time for the fourth: a web VR piece for an artist. I compared technology options, built the VR scene in Three.js, and visitors entered the story via QR. Everything met the deadline.",
+    },
+    tech: {
+      ru: "React на фронте. REST API: промокоды и выдача контента, эндпойнты под пиковую нагрузку в дни выставки. Два промо-контура: оптимизация и соответствие гайдлайнам Самоката. VR: Three.js в браузере, вход по QR.",
+      en: "React on the front end. REST API for promo codes and content delivery, endpoints shaped for peak load on busy exhibition days. Two promo surfaces: performance and Samokat guideline compliance. VR: Three.js in the browser, entry via QR.",
+    },
+  },
+  {
+    kind: "dev",
     title: { ru: "sfumato", en: "sfumato" },
     pet: true,
     role: {
@@ -422,7 +443,7 @@ export const items = [
 
 export const DOSSIER = [
   { key: "curious", label: { ru: "для любопытных", en: "for the curious" } },
-  { key: "hr", label: { ru: "для нанимающих", en: "for hiring" } },
+  { key: "hr", label: { ru: "для нанимающих", en: "for hr" } },
   { key: "tech", label: { ru: "для инженеров", en: "for engineers" } },
 ];
 

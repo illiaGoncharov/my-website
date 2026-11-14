@@ -419,7 +419,9 @@ function piano(time, freq, voice) {
 
 export function playHover(kind, index) {
   const voice = VOICES[kind];
-  if (!enabled || !armed || !voice || !ctx || ctx.state !== "running") return;
+  if (!enabled || !voice) return;
+  if (!running()) primeSound();
+  if (!armed || !ctx || ctx.state !== "running") return;
   const now = ctx.currentTime;
   if (now - lastAt < 0.14) return;
   lastAt = now;

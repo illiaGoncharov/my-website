@@ -2,10 +2,10 @@ import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { DOSSIER, UI, hasLayer, items, pick } from "./content.js?v=28";
+import { DOSSIER, UI, hasLayer, items, pick } from "./content.js?v=30";
 import { background, sample } from "./palette.js?v=2";
 import { tickTabIcon } from "./favicon.js?v=2";
-import { playHover, setUiLabels, unlockSound } from "./sound.js?v=36";
+import { playHover, primeSound, setUiLabels, unlockSound } from "./sound.js?v=37";
 
 const view = document.getElementById("view");
 const labelsRoot = document.getElementById("labels");
@@ -221,12 +221,30 @@ function applyLang(next) {
   }
 }
 
+function bindChromeTap(el) {
+  el.addEventListener(
+    "pointerdown",
+    (e) => {
+      e.stopPropagation();
+      primeSound();
+    },
+    { passive: true },
+  );
+}
+
 for (const btn of langButtons) {
-  btn.addEventListener("click", () => {
+  bindChromeTap(btn);
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
     if (btn.dataset.lang === lang) return;
     applyLang(btn.dataset.lang);
   });
 }
+
+const soundBtn = document.getElementById("sound");
+const rhythmBtns = [...document.querySelectorAll("#rhythm button[data-rhythm]")];
+if (soundBtn) bindChromeTap(soundBtn);
+for (const btn of rhythmBtns) bindChromeTap(btn);
 
 function dossierLength(blocks) {
   return blocks.reduce((sum, block) => sum + block.full.length, 0);
@@ -394,8 +412,9 @@ function onPointerMove(e) {
 function onPointerDown(e) {
   pointerX = e.clientX;
   pointerY = e.clientY;
-  if (e.target.closest("#sound, #rhythm, a, button, .label")) return;
+  if (e.target.closest("#lang, #hint .lead-row, #sound, #rhythm, a, button, .label")) return;
   const hit = cubeUnderPointer();
+  primeSound();
   unlockSound().then((ok) => {
     // Тап мимо куба карточку закрывает и не должен заново играть её ноту.
     if (!ok || hit < 0 || drag?.moved || focus !== hit) return;
