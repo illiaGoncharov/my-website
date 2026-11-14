@@ -5,7 +5,7 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { DOSSIER, items } from "./content.js?v=16";
 import { background, sample } from "./palette.js";
 import "./favicon.js";
-import { playHover, unlockSound } from "./sound.js?v=32";
+import { playHover, unlockSound } from "./sound.js?v=33";
 
 const view = document.getElementById("view");
 const labelsRoot = document.getElementById("labels");

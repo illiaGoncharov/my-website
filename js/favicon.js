@@ -1,8 +1,9 @@
 import { sample } from "./palette.js";
 
 const KINDS = ["dev", "pm", "study", "note", "link"];
-const CYCLE_SEC = 52;
+const CYCLE_SEC = 44;
 const SIZE = 64;
+const STEP_MS = 110;
 const calm = matchMedia("(prefers-reduced-motion: reduce)");
 
 const canvas = document.createElement("canvas");
@@ -10,7 +11,7 @@ canvas.width = SIZE;
 canvas.height = SIZE;
 const ctx = canvas.getContext("2d");
 let link;
-let lastQ = -1;
+let blobUrl;
 let t0 = performance.now();
 
 function ensureLink() {
@@ -26,13 +27,17 @@ function ensureLink() {
 }
 
 function pushIcon() {
-  const url = canvas.toDataURL("image/png");
-  const el = ensureLink();
-  if (el.href === url) return;
-  const fresh = el.cloneNode();
-  fresh.href = url;
-  el.replaceWith(fresh);
-  link = fresh;
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const el = ensureLink();
+    const fresh = el.cloneNode();
+    fresh.href = url;
+    el.replaceWith(fresh);
+    link = fresh;
+    if (blobUrl) URL.revokeObjectURL(blobUrl);
+    blobUrl = url;
+  }, "image/png");
 }
 
 function roundBg() {
@@ -52,13 +57,18 @@ function roundBg() {
   ctx.fill();
 }
 
+function smoothstep(f) {
+  return f * f * (3 - 2 * f);
+}
+
 function blendKinds(p) {
   const n = KINDS.length;
   const x = (((p % 1) + 1) % 1) * n;
   const i = Math.floor(x) % n;
-  const f = x - Math.floor(x);
-  const a = sample(KINDS[i], 0.45);
-  const b = sample(KINDS[(i + 1) % n], 0.45);
+  const f = smoothstep(x - Math.floor(x));
+  const drift = 0.38 + 0.14 * Math.sin(p * Math.PI * 2);
+  const a = sample(KINDS[i], drift);
+  const b = sample(KINDS[(i + 1) % n], drift);
   return [
     a[0] + (b[0] - a[0]) * f,
     a[1] + (b[1] - a[1]) * f,
@@ -78,19 +88,11 @@ function draw(rgb) {
   pushIcon();
 }
 
-function phase(now) {
-  if (calm.matches) return 0.18;
-  return ((now - t0) * 0.001) / CYCLE_SEC % 1;
-}
-
-function frame(now) {
-  requestAnimationFrame(frame);
+function tick() {
   if (document.visibilityState === "hidden") return;
-  const p = phase(now);
-  const q = calm.matches ? 0 : Math.floor(p * 96);
-  if (q === lastQ) return;
-  lastQ = q;
+  const p = calm.matches ? 0.18 : ((performance.now() - t0) * 0.001) / CYCLE_SEC % 1;
   draw(blendKinds(p));
 }
 
-requestAnimationFrame(frame);
+draw(blendKinds(0));
+setInterval(tick, STEP_MS);

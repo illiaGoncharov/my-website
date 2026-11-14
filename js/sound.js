@@ -293,12 +293,10 @@ export function unlockSound() {
   }).catch(() => false);
 }
 
-// На компьютере браузер часто пускает звук сам. На телефоне ждём касание.
-if (enabled && !coarse()) unlockSound();
-
 function noteGesture() {
   wasLive = Boolean(armed && running());
   primeSound();
+  void unlockSound();
 }
 
 addEventListener("touchstart", noteGesture, { capture: true, passive: true });
@@ -306,6 +304,25 @@ addEventListener("pointerdown", (e) => {
   if (e.pointerType === "touch") return;
   noteGesture();
 }, { capture: true });
+
+// Пробуем гул сразу; на телефоне без жеста может молчать до касания.
+if (enabled) {
+  void unlockSound();
+  if (!coarse()) {
+    let tries = 0;
+    const retry = setInterval(() => {
+      if (armed || !enabled || ++tries > 12) {
+        clearInterval(retry);
+        return;
+      }
+      void unlockSound();
+    }, 350);
+  }
+}
+
+addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && enabled) void unlockSound();
+});
 
 function burst(time, dur, gainVal, freq, type) {
   const src = ctx.createBufferSource();
