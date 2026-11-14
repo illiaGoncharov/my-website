@@ -49,11 +49,35 @@
       vertical-align: text-bottom;
     }
     .caret[hidden] { display: none; }
+    #hint {
+      position: fixed;
+      left: 18px;
+      bottom: 16px;
+      max-width: min(560px, calc(100vw - 36px));
+      font-size: 11px;
+      line-height: 1.55;
+      color: rgba(243, 236, 223, 0.5);
+      pointer-events: none;
+    }
+    #hint p { margin: 0; }
+    #hint .key { margin-top: 3px; }
+    #hint i {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin: 0 5px 1px 0;
+      border-radius: 50%;
+      vertical-align: middle;
+    }
   </style>
 </head>
 <body>
   <canvas id="view"></canvas>
   <div id="labels"></div>
+  <aside id="hint">
+    <p>наведи на куб: досье печатается само</p>
+    <p class="key"><i data-kind="dev"></i>разработка, <i data-kind="pm"></i>продукт, <i data-kind="study"></i>учёба, <i data-kind="note"></i>заметки, <i data-kind="link"></i>ссылки</p>
+  </aside>
   <script type="importmap">
   {
     "imports": {
@@ -62,6 +86,6 @@
     }
   }
   </script>
-  <script type="module" src="./js/main.js?v=12"></script>
+  <script type="module" src="./js/main.js?v=13"></script>
 </body>
 </html>

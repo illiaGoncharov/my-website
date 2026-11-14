@@ -14,6 +14,10 @@ const CHARS_PER_FRAME = 4;
 const SPIKE_GAP_MS = 340;
 
 document.body.style.background = background;
+for (const dot of document.querySelectorAll("#hint i")) {
+  const [r, g, b] = sample(dot.dataset.kind, 0.5);
+  dot.style.background = `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
+}
 const renderer = new THREE.WebGLRenderer({ canvas: view, antialias: true, powerPreference: "high-performance" });
 renderer.setClearColor(background);
 const scene = new THREE.Scene();
