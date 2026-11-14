@@ -13,6 +13,7 @@ const labelsRoot = document.getElementById("labels");
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const CHARS_PER_FRAME = 4;
 const SPIKE_GAP_MS = 340;
+const HOVER_PX = 160;
 
 document.body.style.background = background;
 for (const dot of document.querySelectorAll("#hint i")) {
@@ -236,6 +237,12 @@ function chromeTop() {
   return top;
 }
 
+function isCoarsePointer() {
+  return matchMedia("(pointer: coarse)").matches
+    || /iPhone|iPad|iPod/i.test(navigator.userAgent)
+    || (navigator.maxTouchPoints > 0 && matchMedia("(max-width: 900px)").matches);
+}
+
 function cubeUnderPointer() {
   let nearest = -1;
   let nearestD = Infinity;
@@ -244,6 +251,21 @@ function cubeUnderPointer() {
     if (p.behind) continue;
     const d = Math.hypot(p.x - pointerX, p.y - pointerY);
     if (d > cubeReach(i) || d >= nearestD) continue;
+    nearestD = d;
+    nearest = i;
+  }
+  return nearest;
+}
+
+function focusCubeAtPointer() {
+  if (isCoarsePointer()) return cubeUnderPointer();
+  let nearest = -1;
+  let nearestD = HOVER_PX;
+  for (let i = 0; i < items.length; i++) {
+    const p = project(pos[i], innerWidth, innerHeight);
+    if (p.behind) continue;
+    const d = Math.hypot(p.x - pointerX, p.y - pointerY);
+    if (d >= nearestD) continue;
     nearestD = d;
     nearest = i;
   }
@@ -457,7 +479,7 @@ function frame(now) {
   let nearest = drag?.moved ? -1 : labelUnderPointer();
   const screens = pos.map((p) => project(p, w, h));
   if (drag?.moved) nearest = -1;
-  else if (nearest < 0) nearest = cubeUnderPointer();
+  else if (nearest < 0) nearest = focusCubeAtPointer();
   if (nearest !== focus) {
     focus = nearest;
     typedCount = 0;
