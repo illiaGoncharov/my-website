@@ -119,6 +119,17 @@
       color: rgba(243, 236, 223, 0.34);
     }
     #rhythm button[aria-pressed="true"] { color: rgba(243, 236, 223, 0.82); }
+    @media (min-width: 721px) {
+      #hint .lead {
+        position: fixed;
+        top: 16px;
+        right: 18px;
+        left: auto;
+        bottom: auto;
+        max-width: min(360px, calc(100vw - 36px));
+        text-align: right;
+      }
+    }
     @media (max-width: 720px) {
       #hint .lead { display: none; }
       #hint, #rhythm {
@@ -166,6 +177,6 @@
     }
   }
   </script>
-  <script type="module" src="./js/main.js?v=32"></script>
+  <script type="module" src="./js/main.js?v=33"></script>
 </body>
 </html>
