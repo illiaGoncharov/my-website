@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { items } from "./content.js";
+import { DOSSIER, items } from "./content.js";
 import { background, sample } from "./palette.js";
 
 const view = document.getElementById("view");
@@ -10,7 +10,7 @@ const labelsRoot = document.getElementById("labels");
 
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const LABEL_PX = 160;
-const CHARS_PER_FRAME = 3;
+const CHARS_PER_FRAME = 4;
 const SPIKE_GAP_MS = 340;
 
 document.body.style.background = background;
@@ -106,21 +106,49 @@ const labelEls = items.map((item) => {
   el.hidden = true;
   const title = document.createElement("b");
   title.textContent = item.title;
-  const desc = document.createElement("p");
-  const typed = document.createElement("span");
+  const blocks = DOSSIER.filter((layer) => item[layer.key]).map((layer) => {
+    const section = document.createElement("section");
+    section.hidden = true;
+    const who = document.createElement("span");
+    who.className = "who";
+    who.textContent = layer.label;
+    const desc = document.createElement("p");
+    const typed = document.createElement("span");
+    desc.append(typed);
+    section.append(who, desc);
+    return { section, typed, full: item[layer.key] };
+  });
   const caret = document.createElement("i");
   caret.className = "caret";
-  desc.append(typed, caret);
   const look = document.createElement("a");
   look.textContent = "посмотреть";
   look.target = "_blank";
   look.rel = "noopener";
   look.hidden = !item.url;
   if (item.url) look.href = item.url;
-  el.append(title, desc, look);
+  el.append(title, ...blocks.map((block) => block.section), look);
   labelsRoot.append(el);
-  return { el, typed, caret };
+  return { el, blocks, caret };
 });
+
+function dossierLength(blocks) {
+  return blocks.reduce((sum, block) => sum + block.full.length, 0);
+}
+
+function fillDossier(ui, count) {
+  let left = count;
+  let caretBlock = null;
+  for (const block of ui.blocks) {
+    const take = Math.max(0, Math.min(block.full.length, left));
+    block.section.hidden = take === 0;
+    block.typed.textContent = block.full.slice(0, take);
+    if (take < block.full.length) caretBlock = caretBlock || block;
+    left -= block.full.length;
+  }
+  const host = (caretBlock || ui.blocks[ui.blocks.length - 1])?.typed.parentElement;
+  if (host && ui.caret.parentElement !== host) host.append(ui.caret);
+  ui.caret.hidden = count >= dossierLength(ui.blocks);
+}
 
 // Уголки рамки. Ладонь из кубиков с камеры не читалась.
 const bar = (x, y, sx, sy) => ({ x, y, sx, sy });
@@ -333,7 +361,7 @@ function frame(now) {
     if (focus >= 0) requestSpike(0.45);
   }
   if (focus >= 0) {
-    const full = items[focus].text.length;
+    const full = dossierLength(labelEls[focus].blocks);
     const step = calm ? full : CHARS_PER_FRAME;
     if (typedCount < full) typedCount = Math.min(full, typedCount + step);
   }
@@ -352,11 +380,13 @@ function frame(now) {
     const show = active && !screens[i].behind;
     ui.el.hidden = !show;
     if (!show) continue;
-    ui.typed.textContent = items[i].text.slice(0, typedCount);
-    ui.caret.hidden = typedCount >= items[i].text.length;
+    fillDossier(ui, typedCount);
     const [r, g, b] = sample(items[i].kind, t * 0.035 + i * 0.07);
     ui.el.style.borderColor = `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, 0.7)`;
-    const placeBelow = screens[i].y < 150;
+    const cardW = 340;
+    const x = Math.min(Math.max(screens[i].x, cardW / 2 + 12), w - cardW / 2 - 12);
+    const placeBelow = screens[i].y < 240;
+    screens[i].x = x;
     ui.el.style.transform = placeBelow
       ? `translate(${screens[i].x}px, ${screens[i].y}px) translate(-50%, 18px)`
       : `translate(${screens[i].x}px, ${screens[i].y}px) translate(-50%, calc(-100% - 16px))`;

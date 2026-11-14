@@ -22,7 +22,9 @@
       position: absolute;
       left: 0;
       top: 0;
-      width: 260px;
+      width: 340px;
+      max-height: min(68vh, 440px);
+      overflow: auto;
       padding: 8px 10px 10px;
       background: rgba(28, 24, 20, 0.92);
       border: 1px solid rgba(243, 236, 223, 0.22);
@@ -31,7 +33,9 @@
       transform: translate(-50%, calc(-100% - 16px));
     }
     .label b { display: block; font-weight: 500; font-size: 13px; }
-    .label p { margin: 6px 0 8px; min-height: 2.8em; color: #cbbfae; font-size: 12px; line-height: 1.4; }
+    .label .who { display: block; margin-top: 8px; color: rgba(243, 236, 223, 0.45); font-size: 10px; letter-spacing: 0.04em; }
+    .label p { margin: 2px 0 0; color: #cbbfae; font-size: 12px; line-height: 1.4; }
+    .label section[hidden] { display: none; }
     .label a { color: #f3ecdf; cursor: pointer; }
     .label a[hidden] { display: none; }
     .caret {
@@ -56,6 +60,6 @@
     }
   }
   </script>
-  <script type="module" src="./js/main.js?v=6"></script>
+  <script type="module" src="./js/main.js?v=7"></script>
 </body>
 </html>
