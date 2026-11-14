@@ -214,12 +214,25 @@ let spike = 0;
 let lastSpikeAt = -Infinity;
 let camX = 0;
 let camY = 0;
+let panX = 0;
+let panY = 0;
+let drag = null;
 
 function requestSpike(amount) {
   const now = performance.now();
   if (now - lastSpikeAt < SPIKE_GAP_MS) return;
   lastSpikeAt = now;
   spike = Math.max(spike, amount);
+}
+
+function chromeTop() {
+  let top = innerHeight - 8;
+  for (const id of ["hint", "rhythm"]) {
+    const node = document.getElementById(id);
+    if (!node) continue;
+    top = Math.min(top, node.getBoundingClientRect().top - 10);
+  }
+  return top;
 }
 
 function project(v, width, height) {
@@ -242,29 +255,49 @@ function labelUnderPointer() {
 }
 
 let soundLive = false;
+const PAN_LIMIT_X = 7;
+const PAN_LIMIT_Y = 4.5;
+
+function worldPerPixel() {
+  return (2 * Math.tan((42 * Math.PI) / 360) * CAM_Z) / Math.max(innerHeight, 1);
+}
+
 function onPointerMove(e) {
   pointerX = e.clientX;
   pointerY = e.clientY;
   if (!soundLive) unlockSound().then((ok) => { soundLive = ok; });
+  if (!drag || e.pointerId !== drag.id) return;
+  const dx = e.clientX - drag.x;
+  const dy = e.clientY - drag.y;
+  if (Math.hypot(dx, dy) > 8) drag.moved = true;
+  if (!drag.moved) return;
+  const k = worldPerPixel();
+  panX = Math.min(PAN_LIMIT_X, Math.max(-PAN_LIMIT_X, drag.panX - dx * k));
+  panY = Math.min(PAN_LIMIT_Y, Math.max(-PAN_LIMIT_Y, drag.panY + dy * k));
 }
 
 function onPointerDown(e) {
-  if (e.target.closest("#sound, #rhythm")) return;
+  pointerX = e.clientX;
+  pointerY = e.clientY;
+  if (e.target.closest("#sound, #rhythm, a, button, .label")) return;
   unlockSound().then(() => {
-    if (focus >= 0) playHover(items[focus].kind, focus);
+    if (focus >= 0 && !drag?.moved) playHover(items[focus].kind, focus);
   });
-  if (e.button !== 0 || e.target.closest("a, button")) return;
+  if (e.button !== 0) return;
+  drag = { id: e.pointerId, x: e.clientX, y: e.clientY, panX, panY, moved: false };
   pointerDown = true;
 }
 
 function onPointerUp(e) {
-  if (e.button !== 0) return;
+  if (e.type !== "pointercancel" && e.button !== 0) return;
+  if (drag && e.pointerId === drag.id) drag = null;
   pointerDown = false;
 }
 
 addEventListener("pointermove", onPointerMove);
 addEventListener("pointerdown", onPointerDown);
 addEventListener("pointerup", onPointerUp);
+addEventListener("pointercancel", onPointerUp);
 
 function resize() {
   const w = innerWidth;
@@ -290,10 +323,11 @@ function frame(now) {
 
   ndc.set((pointerX / w) * 2 - 1, -(pointerY / h) * 2 + 1);
   const drift = calm ? 0 : 1;
-  camX += (Math.sin(t * 0.12) * 0.22 * drift + ndc.x * 0.28 - camX) * 0.05;
-  camY += (Math.cos(t * 0.1) * 0.12 * drift + ndc.y * 0.16 - camY) * 0.05;
-  camera.position.set(camX, camY, CAM_Z);
-  camera.lookAt(0, 0, 0);
+  const sliding = drag?.moved;
+  camX += (Math.sin(t * 0.12) * 0.22 * drift + (sliding ? 0 : ndc.x * 0.28) - camX) * 0.05;
+  camY += (Math.cos(t * 0.1) * 0.12 * drift + (sliding ? 0 : ndc.y * 0.16) - camY) * 0.05;
+  camera.position.set(camX + panX, camY + panY, CAM_Z);
+  camera.lookAt(panX, panY, 0);
 
   raycaster.setFromCamera(ndc, camera);
   if (!raycaster.ray.intersectPlane(handPlane, handHit)) handHit.set(ndc.x * 2, ndc.y * 1.4, 1.5);
@@ -394,10 +428,11 @@ function frame(now) {
     node.core.material.color.copy(color);
   }
 
-  let nearest = labelUnderPointer();
+  let nearest = drag?.moved ? -1 : labelUnderPointer();
   let nearestD = LABEL_PX;
   const screens = pos.map((p) => project(p, w, h));
-  if (nearest < 0) {
+  if (drag?.moved) nearest = -1;
+  else if (nearest < 0) {
     for (let i = 0; i < items.length; i++) {
       if (screens[i].behind) continue;
       const d = Math.hypot(screens[i].x - pointerX, screens[i].y - pointerY);
@@ -438,17 +473,21 @@ function frame(now) {
     fillDossier(ui, typedCount);
     const [r, g, b] = sample(items[i].kind, t * 0.035 + i * 0.07);
     ui.el.style.borderColor = `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, 0.7)`;
-    const cardW = 340;
+    const floor = chromeTop();
+    ui.el.style.maxHeight = Math.max(140, floor - 16) + "px";
+    const cardW = Math.min(340, w - 24);
+    ui.el.style.width = cardW + "px";
     const cardH = ui.el.offsetHeight || 180;
     const x = Math.min(Math.max(screens[i].x, cardW / 2 + 12), w - cardW / 2 - 12);
     const placeBelow = screens[i].y < h * 0.45 || screens[i].y < cardH + 28;
     let y = screens[i].y;
     if (placeBelow) {
       const bottom = y + 18 + cardH;
-      if (bottom > h - 12) y -= bottom - (h - 12);
-    } else if (y - cardH - 16 < 12) {
-      y += 12 - (y - cardH - 16);
+      if (bottom > floor) y -= bottom - floor;
+    } else if (y - 16 > floor) {
+      y -= y - 16 - floor;
     }
+    if (y - cardH - 16 < 12 && !placeBelow) y += 12 - (y - cardH - 16);
     screens[i].x = x;
     screens[i].y = y;
     ui.el.style.transform = placeBelow

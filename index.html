@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Илья Гончаров</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10,7 +10,7 @@
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; background: #241f1a; cursor: none; }
+    html, body { margin: 0; height: 100%; background: #241f1a; cursor: none; touch-action: none; }
     body {
       font-family: "IBM Plex Mono", ui-monospace, monospace;
       color: #f3ecdf;
@@ -30,6 +30,7 @@
       border: 1px solid rgba(243, 236, 223, 0.22);
       border-radius: 4px;
       pointer-events: auto;
+      touch-action: pan-y;
       transform: translate(-50%, calc(-100% - 16px));
     }
     .label b { display: block; font-weight: 500; font-size: 13px; }
@@ -119,7 +120,24 @@
     }
     #rhythm button[aria-pressed="true"] { color: rgba(243, 236, 223, 0.82); }
     @media (max-width: 720px) {
-      #rhythm { bottom: 78px; }
+      #hint .lead { display: none; }
+      #hint, #rhythm {
+        left: 14px;
+        right: 14px;
+        max-width: none;
+      }
+      #hint { bottom: calc(10px + env(safe-area-inset-bottom)); }
+      #hint .key { margin-top: 0; }
+      #rhythm {
+        bottom: calc(32px + env(safe-area-inset-bottom));
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        text-align: left;
+      }
+      #sound { width: auto; text-align: left; padding: 8px 0; }
+      #rhythm div { margin-top: 0; }
+      #rhythm button { padding: 8px 0; }
     }
   </style>
 </head>
@@ -128,7 +146,7 @@
   <canvas id="view"></canvas>
   <div id="labels"></div>
   <aside id="hint">
-    <p>наведите курсор на куб, чтобы открыть карточку</p>
+    <p class="lead">наведите курсор на куб, чтобы открыть карточку</p>
     <p class="key"><i data-kind="dev"></i>разработка, <i data-kind="pm"></i>продукт, <i data-kind="study"></i>учёба, <i data-kind="note"></i>заметки, <i data-kind="link"></i>ссылки</p>
   </aside>
   <aside id="rhythm">
@@ -147,6 +165,6 @@
     }
   }
   </script>
-  <script type="module" src="./js/main.js?v=28"></script>
+  <script type="module" src="./js/main.js?v=29"></script>
 </body>
 </html>
