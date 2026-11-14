@@ -4,13 +4,13 @@
 
 const VOICES = {
   dev: {
-    notes: [220, 261.63, 293.66, 329.63, 392],
+    notes: [220, 261.63, 293.66, 349.23, 392],
     partials: [1, 2.003, 3.01, 4.2, 5.4],
     mix: [0.55, 0.2, 0.1, 0.05, 0.03],
     decay: 2.2,
     level: 0.16,
     click: 0.4,
-    pip: 3400,
+    pip: true,
   },
   pm: {
     notes: [146.83, 174.61, 196, 220, 261.63],
@@ -22,13 +22,13 @@ const VOICES = {
     pip: 0,
   },
   study: {
-    notes: [329.63, 392, 440, 493.88, 587.33],
+    notes: [293.66, 349.23, 392, 440, 523.25],
     partials: [1, 2.71, 4.15, 6.05],
     mix: [0.42, 0.16, 0.07, 0.04],
     decay: 2.6,
     level: 0.13,
     click: 0.16,
-    pip: 2200,
+    pip: true,
   },
   note: {
     notes: [110, 130.81, 146.83],
@@ -57,10 +57,34 @@ let dry;
 let wet;
 let room;
 let noiseBuf;
+let bed;
 let enabled = true;
 let armed = false;
 let lastAt = 0;
+let rhythm = "none";
+let nextBar = 0;
 const button = document.getElementById("sound");
+const rhythmButtons = [...document.querySelectorAll("#rhythm button")];
+
+// Ре минор: и фон, и ноты кубов, и ритм сидят в одних ступенях.
+const PIPS = [1174.66, 1567.98, 1760];
+const BEAT = 60 / 44;
+const BAR = BEAT * 4;
+const RHYTHMS = {
+  none: [],
+  pulse: [
+    { at: 0, hit: "thud", gain: 0.07 },
+    { at: 2, hit: "thud", gain: 0.035 },
+  ],
+  steps: [
+    { at: 0, hit: "step", gain: 0.09 },
+    { at: 1.7, hit: "step", gain: 0.055 },
+  ],
+  drops: [
+    { at: 0.5, hit: "drop", gain: 0.045, freq: 880 },
+    { at: 3, hit: "drop", gain: 0.03, freq: 1174.66 },
+  ],
+};
 
 try {
   enabled = sessionStorage.getItem("site-sound") !== "off";
@@ -108,13 +132,79 @@ function build() {
   noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * seconds), ctx.sampleRate);
   const data = noiseBuf.getChannelData(0);
   for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  startBed();
+}
+
+// Низкая квинта и тихий вдох. Гул почти не двигается, как в «Выжившем».
+function startBed() {
+  bed = ctx.createGain();
+  bed.gain.value = 0;
+  bed.connect(dry);
+
+  const air = ctx.createBiquadFilter();
+  air.type = "lowpass";
+  air.frequency.value = 320;
+  air.connect(bed);
+
+  const lfo = ctx.createOscillator();
+  const lfoGain = ctx.createGain();
+  lfo.frequency.value = 0.04;
+  lfoGain.gain.value = 90;
+  lfo.connect(lfoGain);
+  lfoGain.connect(air.frequency);
+  lfo.start();
+
+  const tone = (freq, gain) => {
+    const osc = ctx.createOscillator();
+    const twin = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.frequency.value = freq;
+    twin.frequency.value = freq * 1.003;
+    g.gain.value = gain;
+    osc.connect(g);
+    twin.connect(g);
+    g.connect(air);
+    osc.start();
+    twin.start();
+  };
+  tone(73.42, 0.55);
+  tone(110, 0.22);
+  tone(87.31, 0.1);
+
+  const wind = ctx.createBufferSource();
+  wind.buffer = noiseBuf;
+  wind.loop = true;
+  const band = ctx.createBiquadFilter();
+  band.type = "bandpass";
+  band.frequency.value = 480;
+  band.Q.value = 0.7;
+  const breath = ctx.createGain();
+  breath.gain.value = 0.015;
+  const breathLfo = ctx.createOscillator();
+  const breathDepth = ctx.createGain();
+  breathLfo.frequency.value = 0.07;
+  breathDepth.gain.value = 0.012;
+  breathLfo.connect(breathDepth);
+  breathDepth.connect(breath.gain);
+  breathLfo.start();
+  wind.connect(band);
+  band.connect(breath);
+  breath.connect(bed);
+  wind.start();
+}
+
+function setBed(on) {
+  if (!bed || !ctx) return;
+  const now = ctx.currentTime;
+  bed.gain.cancelScheduledValues(now);
+  bed.gain.setTargetAtTime(on ? 0.16 : 0, now, 1.1);
 }
 
 export function unlockSound() {
   if (!ctx) build();
   const pending = ctx.state === "suspended" ? ctx.resume() : Promise.resolve();
   armed = true;
-  return pending;
+  return pending.then(() => setBed(enabled));
 }
 
 function burst(time, dur, gainVal, freq, type) {
@@ -187,7 +277,41 @@ export function playHover(kind, index) {
   piano(now, freq, voice);
   if (voice.click) burst(now, 0.025, voice.click, 2400, "highpass");
   if (voice.grain) burst(now, 0.16, voice.grain, 900, "bandpass");
-  if (voice.pip) note(now, voice.pip + (index % 3) * 180, 0.07, 0.08, dry);
+  if (voice.pip) note(now, PIPS[index % PIPS.length], 0.09, 0.05, dry);
+}
+
+function playHit(time, ev) {
+  if (ev.hit === "thud") note(time, 73.42, 0.6, ev.gain, dry);
+  else if (ev.hit === "step") burst(time, 0.018, ev.gain, 1600, "highpass");
+  else if (ev.hit === "drop") note(time, ev.freq, 1.6, ev.gain, room);
+}
+
+function clock() {
+  if (!enabled || !ctx || ctx.state !== "running") return;
+  const now = ctx.currentTime;
+  const events = RHYTHMS[rhythm] || [];
+  if (!events.length) return;
+  if (!nextBar) nextBar = now + 0.15;
+  while (nextBar < now + 0.3) {
+    for (const ev of events) playHit(nextBar + ev.at * BEAT, ev);
+    nextBar += BAR;
+  }
+}
+
+setInterval(clock, 100);
+
+function paintRhythm() {
+  for (const el of rhythmButtons) {
+    el.setAttribute("aria-pressed", String(el.dataset.rhythm === rhythm));
+  }
+}
+
+function remember(on) {
+  try {
+    sessionStorage.setItem("site-sound", on ? "on" : "off");
+  } catch {
+    // Приватный режим может запретить storage. Звук всё равно переключается.
+  }
 }
 
 if (button) {
@@ -196,11 +320,24 @@ if (button) {
     const wasArmed = armed;
     await unlockSound();
     if (wasArmed || !enabled) enabled = !enabled;
-    try {
-      sessionStorage.setItem("site-sound", enabled ? "on" : "off");
-    } catch {
-      // Приватный режим может запретить storage. Звук всё равно переключается.
-    }
+    if (!enabled) nextBar = 0;
+    remember(enabled);
+    setBed(enabled);
     paintButton();
+  });
+}
+
+paintRhythm();
+for (const el of rhythmButtons) {
+  el.addEventListener("click", async () => {
+    rhythm = el.dataset.rhythm;
+    nextBar = 0;
+    paintRhythm();
+    if (!enabled) {
+      enabled = true;
+      remember(true);
+      paintButton();
+    }
+    await unlockSound();
   });
 }
