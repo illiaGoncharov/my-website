@@ -234,6 +234,20 @@ function chromeTop() {
   return top;
 }
 
+function cubeUnderPointer() {
+  let nearest = -1;
+  let nearestD = Infinity;
+  for (let i = 0; i < items.length; i++) {
+    const p = project(pos[i], innerWidth, innerHeight);
+    if (p.behind) continue;
+    const d = Math.hypot(p.x - pointerX, p.y - pointerY);
+    if (d > cubeReach(i) || d >= nearestD) continue;
+    nearestD = d;
+    nearest = i;
+  }
+  return nearest;
+}
+
 function cubeReach(i) {
   const depth = Math.max(camera.position.distanceTo(pos[i]), 1);
   const scale = containers[i].group.scale.x || 1;
@@ -287,8 +301,11 @@ function onPointerDown(e) {
   pointerX = e.clientX;
   pointerY = e.clientY;
   if (e.target.closest("#sound, #rhythm, a, button, .label")) return;
-  unlockSound().then(() => {
-    if (focus >= 0 && !drag?.moved) playHover(items[focus].kind, focus);
+  const hit = cubeUnderPointer();
+  unlockSound().then((ok) => {
+    // Тап мимо куба карточку закрывает и не должен заново играть её ноту.
+    if (!ok || hit < 0 || drag?.moved || focus !== hit) return;
+    playHover(items[hit].kind, hit);
   });
   if (e.button !== 0) return;
   drag = { id: e.pointerId, x: e.clientX, y: e.clientY, panX, panY, moved: false };
@@ -436,18 +453,9 @@ function frame(now) {
   }
 
   let nearest = drag?.moved ? -1 : labelUnderPointer();
-  let nearestD = Infinity;
   const screens = pos.map((p) => project(p, w, h));
   if (drag?.moved) nearest = -1;
-  else if (nearest < 0) {
-    for (let i = 0; i < items.length; i++) {
-      if (screens[i].behind) continue;
-      const d = Math.hypot(screens[i].x - pointerX, screens[i].y - pointerY);
-      if (d > cubeReach(i) || d >= nearestD) continue;
-      nearestD = d;
-      nearest = i;
-    }
-  }
+  else if (nearest < 0) nearest = cubeUnderPointer();
   if (nearest !== focus) {
     focus = nearest;
     typedCount = 0;
