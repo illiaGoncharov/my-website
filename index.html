@@ -80,9 +80,9 @@
       display: flex;
       align-items: baseline;
       flex-shrink: 0;
+      gap: 10px;
       margin-left: 14px;
     }
-    #lang button + button { margin-left: 10px; }
     #lang button,
     #rhythm button {
       cursor: none;
@@ -93,8 +93,11 @@
       font-size: 11px;
       line-height: 1.55;
       color: rgba(243, 236, 223, 0.34);
+      text-align: left;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+      -webkit-appearance: none;
+      appearance: none;
     }
     #lang button[aria-pressed="true"],
     #rhythm button[aria-pressed="true"] { color: rgba(243, 236, 223, 0.82); }
@@ -109,9 +112,20 @@
       font-size: 11px;
       line-height: 1.55;
       color: rgba(243, 236, 223, 0.82);
+      text-align: left;
+      -webkit-appearance: none;
+      appearance: none;
     }
     #sound[aria-pressed="false"] { color: rgba(243, 236, 223, 0.28); }
-    #hint .key { margin-top: 3px; }
+    #hint .key {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      column-gap: 12px;
+      row-gap: 3px;
+      margin-top: 3px;
+    }
+    #hint .key-item { white-space: nowrap; }
     #hint i {
       display: inline-block;
       width: 7px;
@@ -137,9 +151,13 @@
       text-align: right;
     }
     #rhythm p { margin: 0; }
-    #rhythm div { margin: 0; }
+    #rhythm > div {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin: 0;
+    }
     #sound + div { margin-left: 14px; }
-    #rhythm div button + button { margin-left: 10px; }
     @media (min-width: 721px) {
       #hint .lead-row {
         position: fixed;
@@ -157,37 +175,65 @@
     }
     @media (max-width: 720px) {
       #hint .lead { display: none; }
-      #hint .lead-row {
-        position: fixed;
-        left: 14px;
+      #hint {
+        left: 18px;
         right: auto;
-        top: auto;
-        bottom: calc(54px + env(safe-area-inset-bottom));
-      }
-      #lang { margin-left: 0; }
-      #hint, #rhythm {
-        left: 14px;
-        right: 14px;
-        max-width: none;
-      }
-      #hint { bottom: calc(10px + env(safe-area-inset-bottom)); }
-      #hint .key { margin-top: 0; }
-      #rhythm {
-        bottom: calc(26px + env(safe-area-inset-bottom));
+        bottom: calc(8px + env(safe-area-inset-bottom));
+        max-width: calc(100vw - 36px);
         display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+      }
+      #hint .lead-row {
+        position: static;
+        justify-content: flex-start;
+        width: auto;
+        order: 1;
+        margin: 0;
+      }
+      #lang { margin: 0; gap: 10px; }
+      #hint .key {
+        margin: 0;
+        order: 3;
+      }
+      #rhythm {
+        position: static;
+        order: 2;
+        width: max-content;
+        max-width: calc(100vw - 36px);
         justify-content: flex-start;
         align-items: baseline;
         gap: 10px;
         text-align: left;
-        padding-left: 0;
+        padding: 0;
+        margin: 0;
       }
-      #sound { width: auto; text-align: left; padding: 8px 0; }
-      #rhythm div { margin-top: 0; }
+      #rhythm > div { gap: 10px; }
+      #sound,
+      #sound + div { margin: 0; }
+      #sound,
       #lang button,
       #rhythm button {
-        padding: 10px 6px;
-        min-width: 40px;
-        min-height: 40px;
+        position: relative;
+        width: auto;
+        height: auto;
+        margin: 0;
+        padding: 0;
+        min-width: 0;
+        min-height: 0;
+        line-height: 1.55;
+      }
+      /* зона тапа шире строки, на вёрстку не влияет */
+      #sound::after,
+      #lang button::after,
+      #rhythm button::after {
+        content: "";
+        position: absolute;
+        left: -4px;
+        right: -4px;
+        top: -12px;
+        bottom: -12px;
       }
     }
   </style>
@@ -204,15 +250,15 @@
         <button type="button" data-lang="en" aria-pressed="false">en</button>
       </div>
     </div>
-    <p class="key"><i data-kind="dev"></i>разработка, <i data-kind="art"></i>арт, <i data-kind="pm"></i>продукт, <i data-kind="study"></i>учёба, <i data-kind="note"></i>заметки, <i data-kind="link"></i>ссылки</p>
-  </aside>
-  <aside id="rhythm">
-    <button id="sound" type="button" aria-pressed="false">звук вкл</button>
-    <div>
-      <button type="button" data-rhythm="pulse">удар</button>
-      <button type="button" data-rhythm="torn">рваный</button>
-      <button type="button" data-rhythm="drops">ноты</button>
-    </div>
+    <aside id="rhythm">
+      <button id="sound" type="button" aria-pressed="false">звук вкл</button>
+      <div>
+        <button type="button" data-rhythm="pulse">удар</button>
+        <button type="button" data-rhythm="torn">рваный</button>
+        <button type="button" data-rhythm="drops">ноты</button>
+      </div>
+    </aside>
+    <p class="key"><span class="key-item"><i data-kind="dev"></i>разработка</span><span class="key-item"><i data-kind="art"></i>арт</span><span class="key-item"><i data-kind="pm"></i>продукт</span><span class="key-item"><i data-kind="study"></i>учёба</span><span class="key-item"><i data-kind="note"></i>заметки</span><span class="key-item"><i data-kind="link"></i>ссылки</span></p>
   </aside>
   <script type="importmap">
   {
@@ -222,6 +268,6 @@
     }
   }
   </script>
-  <script type="module" src="./js/main.js?v=57"></script>
+  <script type="module" src="./js/main.js?v=66"></script>
 </body>
 </html>

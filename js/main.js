@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { DOSSIER, UI, hasLayer, items, pick } from "./content.js?v=30";
+import { DOSSIER, UI, hasLayer, items, pick } from "./content.js?v=35";
 import { background, sample } from "./palette.js?v=2";
 import { tickTabIcon } from "./favicon.js?v=2";
 import { playHover, primeSound, setUiLabels, unlockSound } from "./sound.js?v=37";
@@ -121,6 +121,8 @@ function scatterHomes(list) {
 }
 
 const homes = scatterHomes(items);
+const guideIndex = items.findIndex((item) => item.guide);
+if (guideIndex >= 0) homes[guideIndex].set(0, 0.35, 0);
 const pos = homes.map((h) => h.clone());
 const vel = homes.map(() => new THREE.Vector3());
 const phase = homes.map((_, i) => i * 0.7);
@@ -137,6 +139,7 @@ const containers = items.map(() => {
   scene.add(group);
   return { group, shell, core, size: 1 };
 });
+if (guideIndex >= 0 && !reduceMotion.matches) containers[guideIndex].size = 0.04;
 
 const labelEls = items.map((item) => {
   const el = document.createElement("div");
@@ -171,13 +174,15 @@ const labelEls = items.map((item) => {
 function paintLegend(ui) {
   if (!keyEl) return;
   keyEl.replaceChildren();
-  KIND_ORDER.forEach((kind, index) => {
+  KIND_ORDER.forEach((kind) => {
+    const item = document.createElement("span");
+    item.className = "key-item";
     const dot = document.createElement("i");
     dot.dataset.kind = kind;
     const [r, g, b] = sample(kind, 0.5);
     dot.style.background = `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
-    keyEl.append(dot, document.createTextNode(ui.kinds[kind] || kind));
-    if (index < KIND_ORDER.length - 1) keyEl.append(document.createTextNode(", "));
+    item.append(dot, document.createTextNode(ui.kinds[kind] || kind));
+    keyEl.append(item);
   });
 }
 
@@ -308,6 +313,80 @@ let panX = 0;
 let panY = 0;
 let drag = null;
 
+const guide = {
+  on: false,
+  born: 0,
+  fromX: 0,
+  fromY: 0,
+  nudged: 0,
+  hold: false,
+  clicked: false,
+};
+
+let lastMoveX = null;
+let lastMoveY = null;
+
+function stopGuide() {
+  if (!guide.on) return;
+  guide.on = false;
+  guide.hold = false;
+  pointerDown = false;
+}
+
+function startGuide() {
+  if (guideIndex < 0 || reduceMotion.matches) return;
+  guide.on = true;
+  guide.born = performance.now();
+  guide.fromX = innerWidth * 0.38;
+  guide.fromY = Math.min(innerHeight * 0.78, chromeTop() - 36);
+  guide.nudged = 0;
+  guide.hold = false;
+  guide.clicked = false;
+  pointerX = guide.fromX;
+  pointerY = guide.fromY;
+}
+
+function easeOutCubic(t) {
+  return 1 - (1 - t) ** 3;
+}
+
+function stepGuide() {
+  if (!guide.on || guideIndex < 0) return;
+  const elapsed = performance.now() - guide.born;
+  const wait = 650;
+  const travel = 1050;
+  const press = 220;
+  if (elapsed < wait) {
+    pointerX = guide.fromX;
+    pointerY = guide.fromY;
+    pointerDown = false;
+    guide.hold = false;
+    return;
+  }
+  const fly = Math.min(1, (elapsed - wait) / travel);
+  const dest = project(pos[guideIndex], innerWidth, innerHeight);
+  const k = easeOutCubic(fly);
+  pointerX = guide.fromX + (dest.x - guide.fromX) * k;
+  pointerY = guide.fromY + (dest.y - guide.fromY) * k;
+  const after = elapsed - wait - travel;
+  if (fly >= 1) {
+    if (!guide.clicked) {
+      guide.clicked = true;
+      requestSpike(0.45);
+      playHover(items[guideIndex].kind, guideIndex);
+    }
+    guide.hold = true;
+    pointerDown = after >= 0 && after < press;
+    if (after >= press) {
+      guide.on = false;
+      guide.hold = false;
+      pointerDown = false;
+      pointerX = dest.x;
+      pointerY = dest.y;
+    }
+  }
+}
+
 function requestSpike(amount) {
   const now = performance.now();
   if (now - lastSpikeAt < SPIKE_GAP_MS) return;
@@ -396,6 +475,15 @@ function worldPerPixel() {
 }
 
 function onPointerMove(e) {
+  if (guide.on) {
+    if (lastMoveX !== null) {
+      guide.nudged += Math.hypot(e.clientX - lastMoveX, e.clientY - lastMoveY);
+    }
+    lastMoveX = e.clientX;
+    lastMoveY = e.clientY;
+    if (guide.nudged > 80) stopGuide();
+    else return;
+  }
   pointerX = e.clientX;
   pointerY = e.clientY;
   if (!soundLive) unlockSound().then((ok) => { soundLive = ok; });
@@ -410,6 +498,7 @@ function onPointerMove(e) {
 }
 
 function onPointerDown(e) {
+  if (guide.on) stopGuide();
   pointerX = e.clientX;
   pointerY = e.clientY;
   if (e.target.closest("#lang, #hint .lead-row, #sound, #rhythm, a, button, .label")) return;
@@ -458,11 +547,13 @@ function frame(now) {
   const h = innerHeight;
   const calm = reduceMotion.matches;
 
+  stepGuide();
   ndc.set((pointerX / w) * 2 - 1, -(pointerY / h) * 2 + 1);
   const drift = calm ? 0 : 1;
   const sliding = drag?.moved;
-  camX += (Math.sin(t * 0.12) * 0.22 * drift + (sliding ? 0 : ndc.x * 0.28) - camX) * 0.05;
-  camY += (Math.cos(t * 0.1) * 0.12 * drift + (sliding ? 0 : ndc.y * 0.16) - camY) * 0.05;
+  const followPointer = !sliding && !guide.on;
+  camX += (Math.sin(t * 0.12) * 0.22 * drift + (followPointer ? ndc.x * 0.28 : 0) - camX) * 0.05;
+  camY += (Math.cos(t * 0.1) * 0.12 * drift + (followPointer ? ndc.y * 0.16 : 0) - camY) * 0.05;
   camera.position.set(camX + panX, camY + panY, CAM_Z);
   camera.lookAt(panX, panY, 0);
 
@@ -493,10 +584,12 @@ function frame(now) {
   for (let i = 0; i < items.length; i++) {
     if (i === focus) continue;
     const home = homes[i];
+    const pinned = i === guideIndex;
+    const sway = pinned ? 0.2 : 1;
     target.set(
-      home.x + Math.sin(t * 0.16 + phase[i]) * 0.95 * amp,
-      home.y + Math.cos(t * 0.13 + phase[i] * 1.3) * 0.7 * amp,
-      home.z + Math.sin(t * 0.1 + phase[i] * 0.7) * 1.05 * amp,
+      home.x + (pinned ? 0 : Math.sin(t * 0.16 + phase[i]) * 0.95 * amp),
+      home.y + Math.cos(t * 0.13 + phase[i] * 1.3) * 0.7 * sway * amp,
+      home.z + Math.sin(t * 0.1 + phase[i] * 0.7) * 1.05 * sway * amp,
     );
     vel[i].add(target.sub(pos[i]).multiplyScalar(0.018));
   }
@@ -547,6 +640,7 @@ function frame(now) {
   const SPEED = 0.032;
   for (let i = 0; i < items.length; i++) {
     vel[i].multiplyScalar(i === focus ? 0.45 : 0.9);
+    if (i === guideIndex) vel[i].x += (homes[i].x - pos[i].x) * 0.14;
     if (i !== focus && pos[i].distanceTo(homes[i]) > 1.9) {
       gap.copy(homes[i]).sub(pos[i]).multiplyScalar(0.05);
       vel[i].add(gap);
@@ -567,7 +661,8 @@ function frame(now) {
 
   let nearest = drag?.moved ? -1 : labelUnderPointer();
   const screens = pos.map((p) => project(p, w, h));
-  if (drag?.moved) nearest = -1;
+  if (guide.on) nearest = guide.hold ? guideIndex : -1;
+  else if (drag?.moved) nearest = -1;
   else if (nearest < 0) nearest = focusCubeAtPointer();
   if (nearest !== focus) {
     focus = nearest;
@@ -634,4 +729,5 @@ function frame(now) {
   composer.render();
 }
 
+startGuide();
 requestAnimationFrame(frame);

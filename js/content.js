@@ -354,6 +354,28 @@ export const items = [
   },
   {
     kind: "note",
+    guide: true,
+    title: { ru: "Я", en: "Me" },
+    role: {
+      ru: "продакт + инженер · о себе",
+      en: "product + engineer · about me",
+    },
+    url: "",
+    curious: {
+      ru: "Мне всегда было сложно выбрать: придумать, зачем штука нужна людям, или сесть и собрать её руками. Поэтому делаю и то, и другое. Люблю, когда сложная инженерная часть снаружи выглядит простой и спокойной — как этот сайт. Можно кликать по кубикам, включать ритмы внизу или просто залипать, как они парят.",
+      en: "I could never pick between figuring out why something should exist or sitting down to build it myself. So I do both. I like it when heavy engineering feels simple and quiet on the surface — like this site. You can click on cubes, turn on rhythms below, or just zone out watching them drift.",
+    },
+    hr: {
+      ru: "Шесть лет соединяю продуктовое управление и веб-разработку: вёл проекты в Студии Лебедева, выстраивал международный чекаут под санкциями, переводил бардак в таблицах в аккуратные CRM и собирал веб-VR для выставок. Хорошо держу неопределённость, умею слышать клиента и доводить сырую задачу до продакшена. Не бросаю на полпути.",
+      en: "Six years connecting product management and web engineering: ran projects at Art. Lebedev Studio, built multi-currency checkouts around sanctions, turned spreadsheet chaos into clean ops tools, and built web VR for exhibitions. Comfortable with ambiguity, quick to understand clients, and used to taking raw ideas all the way to production. I finish what I start.",
+    },
+    tech: {
+      ru: "Стек: TypeScript, React, Next.js, Node.js, Express, Three.js, PostgreSQL, Prisma, Docker. Строгая типизация, слои и валидация на входе. Ценю лёгкость: если задачу решает нативный Canvas или три строки CSS, не тащу тяжёлый фреймворк. В разработку приношу продуктовую оптику: умею срезать лишний скоуп ещё до первой строчки кода и перевожу сырые хотелки бизнеса в простую архитектуру, без космолётов.",
+      en: "Stack: TypeScript, React, Next.js, Node.js, Express, Three.js, PostgreSQL, Prisma, Docker. Strict typing, layered architecture, edge validation. I value lean tools: if a native Canvas or three lines of CSS solves the problem, I will not pull in a heavy framework. To engineering I bring a product lens: cutting unnecessary scope before the first line of code and turning raw business needs into clean architecture without overengineering.",
+    },
+  },
+  {
+    kind: "note",
     title: { ru: "Точка", en: "Dot" },
     url: "",
     curious: {
