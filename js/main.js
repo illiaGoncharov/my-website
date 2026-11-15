@@ -352,10 +352,12 @@ function easeOutCubic(t) {
 
 function stepGuide() {
   if (!guide.on || guideIndex < 0) return;
+  const coarse = isCoarsePointer();
   const elapsed = performance.now() - guide.born;
   const wait = 650;
   const travel = 1050;
   const press = 220;
+  const hoverDwell = 500;
   if (elapsed < wait) {
     pointerX = guide.fromX;
     pointerY = guide.fromY;
@@ -376,13 +378,23 @@ function stepGuide() {
       playHover(items[guideIndex].kind, guideIndex);
     }
     guide.hold = true;
-    pointerDown = after >= 0 && after < press;
-    if (after >= press) {
-      guide.on = false;
-      guide.hold = false;
+    if (coarse) {
+      pointerDown = after >= 0 && after < press;
+      if (after >= press) {
+        guide.on = false;
+        guide.hold = false;
+        pointerDown = false;
+        pointerX = dest.x;
+        pointerY = dest.y;
+      }
+    } else {
       pointerDown = false;
-      pointerX = dest.x;
-      pointerY = dest.y;
+      if (after >= hoverDwell) {
+        guide.on = false;
+        guide.hold = false;
+        pointerX = dest.x;
+        pointerY = dest.y;
+      }
     }
   }
 }
