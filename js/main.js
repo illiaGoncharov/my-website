@@ -3,9 +3,9 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { DOSSIER, UI, hasLayer, items, pick } from "./content.js?v=37";
-import { background, sample } from "./palette.js?v=2";
+import { background, sample, sampleCube } from "./palette.js?v=4";
 import { tickTabIcon } from "./favicon.js?v=2";
-import { playHover, primeSound, setUiLabels, unlockSound } from "./sound.js?v=37";
+import { playHover, primeSound, setUiLabels, unlockSound } from "./sound.js?v=38";
 
 const view = document.getElementById("view");
 const labelsRoot = document.getElementById("labels");
@@ -665,7 +665,7 @@ function frame(now) {
     node.group.position.copy(pos[i]);
     if (i !== focus) node.group.rotation.set(0.5, t * 0.22 * amp + phase[i], 0.15);
 
-    const [r, g, b] = sample(items[i].kind, t * 0.035 + i * 0.07);
+    const [r, g, b] = sampleCube(items[i].kind, i, t, phase[i]);
     color.setRGB(r, g, b);
     node.shell.material.color.copy(color);
     node.core.material.color.copy(color);
@@ -708,7 +708,7 @@ function frame(now) {
     ui.el.hidden = !show;
     if (!show) continue;
     fillDossier(ui, typedCount);
-    const [r, g, b] = sample(items[i].kind, t * 0.035 + i * 0.07);
+    const [r, g, b] = sampleCube(items[i].kind, i, t, phase[i]);
     ui.el.style.borderColor = `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, 0.7)`;
     const floor = chromeTop();
     ui.el.style.maxHeight = Math.max(140, floor - 16) + "px";

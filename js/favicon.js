@@ -1,4 +1,4 @@
-import { sample } from "./palette.js?v=2";
+import { sample } from "./palette.js?v=4";
 
 const KINDS = ["dev", "art", "pm", "study", "note", "link"];
 const CYCLE_SEC = 18;

@@ -2,10 +2,10 @@ import { oklch, formatRgb } from "../vendor/culori.min.mjs";
 
 // Диапазоны оттенка. Цвет плывёт внутри своего диапазона, не прыгает между видами.
 const RANGES = {
-  dev: { h0: 110, h1: 150, l: 0.82, c: 0.15 },
+  dev: { h0: 120, h1: 133, l: 0.82, c: 0.14 },
   pm: { h0: 160, h1: 200, l: 0.78, c: 0.11 },
-  link: { h0: 75, h1: 98, l: 0.92, c: 0.028 },
-  note: { h0: 55, h1: 85, l: 0.62, c: 0.02 },
+  link: { h0: 88, h1: 102, l: 0.93, c: 0.045 },
+  note: { h0: 248, h1: 268, l: 0.56, c: 0.038 },
   study: { h0: 300, h1: 330, l: 0.7, c: 0.06 },
   art: { h0: 345, h1: 375, l: 0.8, c: 0.11 },
   avatar: { h0: 228, h1: 268, l: 0.78, c: 0.07 },
@@ -45,4 +45,22 @@ export function sample(kind, t) {
     rgb[i * 3 + 1] + (rgb[j * 3 + 1] - rgb[i * 3 + 1]) * f,
     rgb[i * 3 + 2] + (rgb[j * 3 + 2] - rgb[i * 3 + 2]) * f,
   ];
+}
+
+// Доля градиента kind, в которой живут кубы одной категории (узко у dev — без жёлтого хвоста).
+const KIND_SPREAD = {
+  dev: 0.17,
+  pm: 0.28,
+  art: 0.28,
+  study: 0.28,
+  note: 0.2,
+  link: 0.18,
+};
+
+export function sampleCube(kind, index, timeSec, phase) {
+  const spread = KIND_SPREAD[kind] ?? 0.25;
+  const base = 0.5 - spread / 2;
+  const slot = (index * 0.041) % spread;
+  const drift = Math.sin(timeSec * 0.035 + phase) * spread * 0.16;
+  return sample(kind, base + slot + drift);
 }
