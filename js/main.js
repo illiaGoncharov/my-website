@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { DOSSIER, UI, hasLayer, items, pick } from "./content.js?v=35";
+import { DOSSIER, UI, hasLayer, items, pick } from "./content.js?v=37";
 import { background, sample } from "./palette.js?v=2";
 import { tickTabIcon } from "./favicon.js?v=2";
 import { playHover, primeSound, setUiLabels, unlockSound } from "./sound.js?v=37";
