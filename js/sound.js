@@ -4,13 +4,15 @@
 
 const VOICES = {
   dev: {
-    notes: [220, 261.63, 293.66, 349.23, 392],
-    partials: [1, 2.003, 3.01, 4.2, 5.4],
-    mix: [0.55, 0.2, 0.1, 0.05, 0.03],
-    decay: 2.2,
-    level: 0.16,
-    click: 0.28,
-    pip: true,
+    // Ступени Dm без ми: стык с pad (D2/F2/A2). kindSlot 0…6 — arpeggio вверх.
+    notes: [174.61, 220, 261.63, 293.66, 349.23, 392, 440],
+    partials: [1, 2, 3, 4],
+    mix: [0.48, 0.2, 0.07, 0.03],
+    decay: 2.9,
+    level: 0.14,
+    click: 0,
+    pip: 0,
+    softFilter: true,
   },
   pm: {
     notes: [146.83, 174.61, 196, 220, 261.63],
@@ -399,9 +401,10 @@ function piano(time, freq, voice) {
   const filter = ctx.createBiquadFilter();
   filter.type = "lowpass";
   filter.Q.value = 0.6;
-  filter.frequency.setValueAtTime(640, time);
-  filter.frequency.exponentialRampToValueAtTime(2600, time + 0.045);
-  filter.frequency.exponentialRampToValueAtTime(520, time + voice.decay);
+  const peak = voice.softFilter ? 1450 : 2600;
+  filter.frequency.setValueAtTime(520, time);
+  filter.frequency.exponentialRampToValueAtTime(peak, time + 0.055);
+  filter.frequency.exponentialRampToValueAtTime(480, time + voice.decay);
   const body = ctx.createGain();
   body.gain.value = voice.level;
   filter.connect(body);
@@ -417,7 +420,7 @@ function piano(time, freq, voice) {
   if (voice.fifth) note(time, freq * 1.5, voice.decay * 0.85, 0.28, filter);
 }
 
-export function playHover(kind, index) {
+export function playHover(kind, kindSlot) {
   const voice = VOICES[kind];
   if (!enabled || !voice) return;
   if (!running()) primeSound();
@@ -425,7 +428,7 @@ export function playHover(kind, index) {
   const now = ctx.currentTime;
   if (now - lastAt < 0.14) return;
   lastAt = now;
-  piano(now, voice.notes[index % voice.notes.length], voice);
+  piano(now, voice.notes[kindSlot % voice.notes.length], voice);
 }
 
 function thud(time, gain) {

@@ -5,7 +5,7 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { DOSSIER, UI, hasLayer, items, pick } from "./content.js?v=37";
 import { background, sample, sampleCube } from "./palette.js?v=4";
 import { tickTabIcon } from "./favicon.js?v=2";
-import { playHover, primeSound, setUiLabels, unlockSound } from "./sound.js?v=38";
+import { playHover, primeSound, setUiLabels, unlockSound } from "./sound.js?v=41";
 
 const view = document.getElementById("view");
 const labelsRoot = document.getElementById("labels");
@@ -118,6 +118,17 @@ function scatterHomes(list) {
     });
   }
   return homes;
+}
+
+// Порядковый номер куба внутри kind — для уникальной ноты при hover.
+const kindSlot = new Array(items.length);
+{
+  const seen = {};
+  items.forEach((item, i) => {
+    const n = seen[item.kind] ?? 0;
+    kindSlot[i] = n;
+    seen[item.kind] = n + 1;
+  });
 }
 
 const homes = scatterHomes(items);
@@ -375,7 +386,7 @@ function stepGuide() {
     if (!guide.clicked) {
       guide.clicked = true;
       requestSpike(0.45);
-      playHover(items[guideIndex].kind, guideIndex);
+      playHover(items[guideIndex].kind, kindSlot[guideIndex]);
     }
     guide.hold = true;
     if (coarse) {
@@ -519,7 +530,7 @@ function onPointerDown(e) {
   unlockSound().then((ok) => {
     // Тап мимо куба карточку закрывает и не должен заново играть её ноту.
     if (!ok || hit < 0 || drag?.moved || focus !== hit) return;
-    playHover(items[hit].kind, hit);
+    playHover(items[hit].kind, kindSlot[hit]);
   });
   if (e.button !== 0) return;
   drag = { id: e.pointerId, x: e.clientX, y: e.clientY, panX, panY, moved: false };
@@ -681,7 +692,7 @@ function frame(now) {
     typedCount = 0;
     if (focus >= 0) {
       requestSpike(0.45);
-      playHover(items[focus].kind, focus);
+      playHover(items[focus].kind, kindSlot[focus]);
     }
   }
   if (focus >= 0) {
